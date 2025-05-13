@@ -1,10 +1,12 @@
 "use client";
 
-import { Button } from "@/components/Button";
+import { Button } from "@/components/ui/Button";
 import { tonePrompts, ToneType } from "./api/optimize/[tone]/route";
 
 import OpenAI from "openai";
 import React, { useState } from "react";
+import { TextInputArea } from "@/components/ui/TextInputArea";
+import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
 
 const tones = [
     "formal",
@@ -47,20 +49,36 @@ export default function Home() {
     };
 
     return (
-        <main className="flex h-screen w-screen flex-col items-center justify-center gap-6">
-            <h1 className="mb-2 text-4xl font-medium">AdVerb</h1>
+        <main className="flex flex-col gap-12 px-6">
+            <section id="hero" className="flex flex-col gap-12">
+                <h1 className="text-5xl">
+                    Write ads <br /> that convert
+                </h1>
 
-            <form onSubmit={generateSuggestion} className="flex w-full flex-col items-center gap-6 px-6">
-                <textarea
-                    name="user-prompt"
-                    autoFocus={true}
-                    placeholder="Your message goes here..."
-                    className={`no-scrollbar w-full max-w-[700px] ${prompt.length > 150 ? "h-50" : "h-30"} rounded-xl border-2 border-[var(--color-foreground)]/60 px-6 py-4 transition-[height,colors] duration-200 outline-none focus:border-[var(--color-foreground)] dark:border-[var(--color-foreground)]/15 focus:dark:border-[var(--color-button-foreground)]/50`}
-                    onChange={e => setPrompt(e.target.value)}
-                />
+                <form onSubmit={generateSuggestion} className="flex w-full flex-col items-center gap-6">
+                    <TextInputArea
+                        name="user-prompt"
+                        placeholder="⚡ Put your ad here..."
+                        className={`w-full max-w-[700px] ${prompt.length ? "h-30" : "h-15"}`}
+                        onChange={e => setPrompt(e.target.value)}
+                    />
 
-                <Button>Optimize</Button>
-            </form>
+                    <Button className="w-full max-w-[700px]">Try AdVerb Free</Button>
+                </form>
+            </section>
+
+            <section id="suggestions" className="flex flex-col gap-12">
+                <div className="flex flex-col gap-4">
+                    <h2 className="text-2xl">Step 1</h2>
+
+                    <label htmlFor="tone-select">Choose the tone you're going for</label>
+                    <StringSelectMenu
+                        id="tone-select"
+                        options={tones.map(t => ({ id: t, label: t }))}
+                        className="w-full max-w-[700px]"
+                    />
+                </div>
+            </section>
 
             {/* Suggestions */}
             <div className="flex w-full flex-col gap-6 px-6">

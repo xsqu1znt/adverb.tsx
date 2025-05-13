@@ -1,0 +1,40 @@
+export type ButtonStyles = "primary" | "destructive" | "outline" | "invisible";
+export type ButtonSizes = "square" | "sm" | "md" | "lg";
+
+import { cn } from "@/lib/utils";
+
+// prettier-ignore
+export const buttonStyles: Record<ButtonStyles, string> = {
+    primary: "border border-[var(--color-button-border)] bg-[var(--color-button-background)] text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)] focus:bg-[var(--color-button-background-hover)] focus:dark:border-[var(--color-foreground)]/50",
+    destructive: "bg-red-400 text-foreground hover:bg-red-400/90",
+    outline: "border border-[var(--color-button-border)] text-[var(--color-button-background)] dark:text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)]/10",
+    invisible: "bg-transparent text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)]/50"
+};
+
+export const buttonSizes: Record<ButtonSizes, string> = {
+    square: "p-2 text-sm",
+    sm: "px-3 py-2 text-sm",
+    md: "px-6 py-3 text-base",
+    lg: "px-8 py-3 text-lg"
+};
+
+interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: ButtonStyles;
+    size?: ButtonSizes;
+}
+
+export function Button(props: Props) {
+    return (
+        <button
+            {...props}
+            className={cn(
+                "flex w-fit cursor-pointer items-center justify-center rounded-lg font-medium text-nowrap transition-colors duration-200 outline-none",
+                buttonStyles[props.variant || "primary"],
+                buttonSizes[props.size || "md"],
+                props.className
+            )}
+        >
+            {props.children}
+        </button>
+    );
+}
