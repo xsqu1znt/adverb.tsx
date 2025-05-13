@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 export const buttonStyles: Record<ButtonStyles, string> = {
     primary: "border border-[var(--color-button-border)] bg-[var(--color-button-background)] text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)] focus:bg-[var(--color-button-background-hover)] focus:dark:border-[var(--color-foreground)]/50",
     destructive: "bg-red-400 text-foreground hover:bg-red-400/90",
-    outline: "border border-[var(--color-button-border)] text-[var(--color-button-background)] dark:text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)]/10",
-    invisible: "bg-transparent text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)]/50"
+    outline: "border border-[var(--color-button-border)] text-[var(--color-button-background)] dark:text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)]/50",
+    invisible: "bg-transparent text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)]/75"
 };
 
 export const buttonSizes: Record<ButtonSizes, string> = {
@@ -28,7 +28,7 @@ export function Button(props: Props) {
         <button
             {...props}
             className={cn(
-                "flex w-fit cursor-pointer items-center justify-center rounded-lg font-medium text-nowrap transition-colors duration-200 outline-none",
+                "flex w-fit cursor-pointer items-center justify-center gap-2 rounded-lg font-medium text-nowrap transition-colors duration-200 outline-none",
                 buttonStyles[props.variant || "primary"],
                 buttonSizes[props.size || "md"],
                 props.className

@@ -1,19 +1,20 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
-import { tonePrompts, ToneType } from "./api/optimize/[tone]/route";
+import { ToneType } from "./api/optimize/[tone]/route";
 
-import OpenAI from "openai";
-import React, { useState } from "react";
-import { TextInputArea } from "@/components/ui/TextInputArea";
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
+import { TextInputArea } from "@/components/ui/TextInputArea";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices } from "lucide-react";
+import OpenAI from "openai";
 
 const tones = ["Professional", "Formal", "Playful", "Urgent", "Casual", "Witty", "Friendly", "Empathetic", "Bold"];
 
 export default function Home() {
     const [prompt, setPrompt] = useState("");
     const [suggestion, setSuggestion] = useState("");
-    const [tone, setTone] = useState<ToneType>("urgent");
+    const [tone, setTone] = useState<ToneType>("professional");
 
     const generateSuggestion = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -38,63 +39,95 @@ export default function Home() {
     };
 
     return (
-        <main className="flex flex-col gap-12 px-6">
-            <section id="hero" className="flex flex-col gap-12">
-                <h1 className="text-5xl">
-                    Write ads <br /> that convert
-                </h1>
+        <main className="flex w-full flex-col items-center gap-12 px-6">
+            {/* Hero */}
+            <section id="hero" className="flex w-full max-w-[700px] flex-col gap-12">
+                <div className="flex flex-col gap-1 md:hidden">
+                    <h1 className="text-5xl">Write ads</h1>
+                    <h1 className="text-5xl">that convert</h1>
+                </div>
 
-                <form onSubmit={generateSuggestion} className="flex w-full flex-col items-center gap-6">
+                <div className="hidden md:block">
+                    <h1 className="text-center text-5xl">Write ads, that convert</h1>
+                </div>
+
+                <form onSubmit={generateSuggestion} className="flex w-full flex-col gap-6">
                     <TextInputArea
                         name="user-prompt"
                         placeholder="⚡ Put your ad here..."
-                        className={`w-full max-w-[700px] ${prompt.length ? "h-30" : "h-15"}`}
+                        className={` ${prompt.length ? "h-30" : "h-15"}`}
                         onChange={e => setPrompt(e.target.value)}
                     />
 
-                    <Button className="w-full max-w-[700px]">Try AdVerb Free</Button>
+                    {/* <Button className="w-full">Try AdVerb Free!</Button> */}
                 </form>
             </section>
 
-            <section id="suggestions" className="flex flex-col gap-12">
+            {/* Tone Select */}
+            <section id="tones" className="flex w-full max-w-[700px] flex-col gap-12">
                 <div className="flex flex-col gap-4">
-                    <h2 className="text-2xl">Step 1</h2>
+                    <h2 className="text-2xl">Step 2</h2>
 
                     <label htmlFor="tone-select">Choose the tone you're going for</label>
                     <StringSelectMenu
                         id="tone-select"
                         options={tones.map(t => ({ id: t, label: t }))}
-                        // direction="top"
-                        className="w-full max-w-[700px]"
+                        direction="top"
+                        // placeholder="Select your tone..."
+                        className="w-full"
+                        onOptionSelect={option => setTone(option.id as ToneType)}
                     />
                 </div>
             </section>
 
             {/* Suggestions */}
-            <div className="flex w-full flex-col gap-6 px-6">
-                {/* V1 */}
-                <div className="flex w-full flex-col gap-2">
-                    <label htmlFor="improv-v1" className="text-md opacity-75">
-                        Improved Version
-                    </label>
+            <section id="suggestions" className="flex w-full max-w-[700px] flex-col gap-12">
+                <div className="flex w-full max-w-[700px] flex-col gap-4">
+                    <h2 className="text-2xl">Step 3</h2>
 
-                    <div className="relative w-full">
-                        {/* <Button variant={"outline"} className="absolute top-4 right-4">
-                            Copy
-                        </Button> */}
+                    <div className="flex items-center justify-between gap-4">
+                        <label htmlFor="prompt-suggestion">Check out your optimized ad!</label>
+                        <Button variant="outline" size="sm">
+                            <Dices size={18} />
+                            Reroll
+                        </Button>
+                    </div>
 
-                        <textarea
-                            id="improv-v1"
-                            readOnly={true}
+                    <div className="">
+                        <TextInputArea
+                            name="prompt-suggestion"
                             value={suggestion}
-                            rows={6}
-                            cols={30}
-                            placeholder="Your improved ad..."
-                            className={`no-scrollbar w-full max-w-[700px] ${suggestion.length > 150 ? "h-50" : "h-30"} rounded-xl border-2 border-[var(--color-foreground)]/60 px-6 py-4 transition-[height,colors] duration-200 outline-none focus:border-[var(--color-foreground)] dark:border-[var(--color-foreground)]/15 focus:dark:border-[var(--color-button-foreground)]/50`}
+                            readOnly
+                            placeholder="There seems to be nothing... Yet!"
+                            className={`w-full rounded-b-none ${suggestion.length ? "h-30" : "h-15"} cursor-default`}
                         />
+
+                        <div className="flex w-full items-center justify-between rounded-b-lg border border-t-0 border-[var(--color-foreground)]/60 bg-[var(--color-background)] dark:border-[var(--color-foreground)]/15">
+                            {/* History Navigation */}
+                            <div className="flex">
+                                <Button variant="invisible" size="square" className="rounded-none px-6">
+                                    <ArrowLeft size={20} />
+                                </Button>
+
+                                <Button variant="invisible" size="square" className="rounded-none rounded-br-lg px-6">
+                                    <ArrowRight size={20} />
+                                </Button>
+                            </div>
+
+                            {/* Options */}
+                            <div className="flex">
+                                <Button variant="invisible" size="square" className="rounded-none px-6">
+                                    <BookmarkPlus size={20} />
+                                </Button>
+
+                                <Button variant="invisible" size="square" className="rounded-none rounded-br-lg px-6">
+                                    <Copy size={20} />
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </main>
     );
 }
