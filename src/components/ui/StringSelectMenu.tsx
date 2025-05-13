@@ -70,7 +70,7 @@ export function StringSelectMenu(props: Props) {
         <div className={cn("relative", props.className)} ref={menuRef}>
             <button
                 className={cn(
-                    `flex w-fit cursor-pointer items-center justify-between rounded-lg ${props.disabled && "pointer-events-none opacity-50"} ${open ? (props.direction === "top" ? "rounded-t-none" : "rounded-b-none") : ""} px-6 py-3 text-base transition-[colors,border-radius] duration-100 outline-none`,
+                    `flex w-fit cursor-pointer items-center justify-between rounded-lg ease-in-out ${props.disabled && "pointer-events-none opacity-50"} ${open ? (props.direction === "top" ? "rounded-t-none" : "rounded-b-none") : ""} px-6 py-3 text-base transition-[colors,border-radius] duration-100 outline-none`,
                     styleVariant,
                     styleSize,
                     styleMinWidth,
@@ -85,7 +85,7 @@ export function StringSelectMenu(props: Props) {
                     {!selected && props.placeholder ? props.placeholder : selected?.label}
                 </span>
                 <svg
-                    className={`size-4 transform-[colors,rotate] duration-200 ${open ? (props.direction === "top" ? "rotate-0" : "rotate-180") : props.direction === "top" ? "rotate-180" : "rotate-0"}`}
+                    className={`size-4 transform-[colors,rotate] duration-200 ease-in-out ${open ? (props.direction === "top" ? "rotate-0" : "rotate-180") : props.direction === "top" ? "rotate-180" : "rotate-0"}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

@@ -1,5 +1,5 @@
 .dropdown {
-    animation: fadeScale 50ms ease-out forwards;
+    animation: fadeScale 75ms ease-in-out forwards;
     opacity: 0;
     transform: scale(0.95);
 }
