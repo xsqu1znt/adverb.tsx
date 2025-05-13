@@ -4,25 +4,37 @@ import { ToneType } from "./api/optimize/[tone]/route";
 
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
 import { TextInputArea } from "@/components/ui/TextInputArea";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, SendHorizonal } from "lucide-react";
 import OpenAI from "openai";
 
 const tones = ["Professional", "Formal", "Playful", "Urgent", "Casual", "Witty", "Friendly", "Empathetic", "Bold"];
 
 export default function Home() {
-    const [prompt, setPrompt] = useState("");
+    const [userPrompt, setUserPrompt] = useState("");
+    const [lastUserPrompt, setLastUserPrompt] = useState("");
     const [suggestion, setSuggestion] = useState("");
     const [tone, setTone] = useState<ToneType>("professional");
 
-    const generateSuggestion = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const [isOptimizing, setIsOptimizing] = useState(false);
+
+    useEffect(() => {
+        setIsOptimizing(false);
+    }, [suggestion]);
+
+    const generateSuggestion = async () => {
+        if (!userPrompt) {
+            alert("Please enter a prompt!");
+            return;
+        }
+
+        setIsOptimizing(true);
 
         const res = await fetch(`/api/optimize/${tone}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: prompt })
+            body: JSON.stringify({ text: userPrompt })
         });
 
         const { error, suggestion, usage } = (await res.json()) as {
@@ -36,6 +48,8 @@ export default function Home() {
         } else if (suggestion) {
             setSuggestion(suggestion);
         }
+
+        setLastUserPrompt(userPrompt);
     };
 
     return (
@@ -51,16 +65,21 @@ export default function Home() {
                     <h1 className="text-center text-5xl">Write ads, that convert</h1>
                 </div>
 
-                <form onSubmit={generateSuggestion} className="flex w-full flex-col gap-6">
+                <div className="relative w-full">
                     <TextInputArea
                         name="user-prompt"
                         placeholder="⚡ Put your ad here..."
-                        className={` ${prompt.length ? "h-30" : "h-15"}`}
-                        onChange={e => setPrompt(e.target.value)}
+                        disabled={isOptimizing}
+                        className={`w-full ${userPrompt.length ? (userPrompt.length > 250 ? "h-50" : "h-30") : "h-15"}`}
+                        maxLength={300}
+                        onChange={e => setUserPrompt(e.target.value)}
                     />
 
-                    {/* <Button className="w-full">Try AdVerb Free!</Button> */}
-                </form>
+                    {/* Character count and limit */}
+                    <div className="absolute right-0 bottom-0 rounded-tl-lg rounded-br-lg bg-[var(--color-background)] px-2">
+                        <span className="text-sm opacity-50 dark:opacity-25">{userPrompt.length}/300</span>
+                    </div>
+                </div>
             </section>
 
             {/* Tone Select */}
@@ -73,8 +92,9 @@ export default function Home() {
                         id="tone-select"
                         options={tones.map(t => ({ id: t, label: t }))}
                         direction="top"
-                        // placeholder="Select your tone..."
+                        disabled={isOptimizing}
                         className="w-full"
+                        variant="outline"
                         onOptionSelect={option => setTone(option.id as ToneType)}
                     />
                 </div>
@@ -87,9 +107,10 @@ export default function Home() {
 
                     <div className="flex items-center justify-between gap-4">
                         <label htmlFor="prompt-suggestion">Check out your optimized ad!</label>
-                        <Button variant="outline" size="sm">
-                            <Dices size={18} />
-                            Reroll
+                        <Button variant="primary" size="sm" disabled={isOptimizing} onClick={() => generateSuggestion()}>
+                            {lastUserPrompt && userPrompt === lastUserPrompt ? <Dices size={18} /> : ""}
+                            {lastUserPrompt && userPrompt === lastUserPrompt ? "Reroll" : "Optimize"}
+                            {lastUserPrompt && userPrompt === lastUserPrompt ? "" : <SendHorizonal size={18} />}
                         </Button>
                     </div>
 
@@ -98,29 +119,50 @@ export default function Home() {
                             name="prompt-suggestion"
                             value={suggestion}
                             readOnly
-                            placeholder="There seems to be nothing... Yet!"
-                            className={`w-full rounded-b-none ${suggestion.length ? "h-30" : "h-15"} cursor-default`}
+                            placeholder={isOptimizing ? "Optimizing..." : "There seems to be nothing... Yet!"}
+                            disabled={isOptimizing}
+                            className={`w-full rounded-b-none ${suggestion.length ? (suggestion.length > 250 ? "h-50" : "h-30") : "h-15"} cursor-default`}
                         />
 
                         <div className="flex w-full items-center justify-between rounded-b-lg border border-t-0 border-[var(--color-foreground)]/60 bg-[var(--color-background)] dark:border-[var(--color-foreground)]/15">
                             {/* History Navigation */}
                             <div className="flex">
-                                <Button variant="invisible" size="square" className="rounded-none px-6">
+                                <Button
+                                    variant="invisible"
+                                    size="square"
+                                    disabled={isOptimizing || !suggestion.length}
+                                    className="rounded-none rounded-bl-lg px-6"
+                                >
                                     <ArrowLeft size={20} />
                                 </Button>
 
-                                <Button variant="invisible" size="square" className="rounded-none rounded-br-lg px-6">
+                                <Button
+                                    variant="invisible"
+                                    size="square"
+                                    disabled={isOptimizing || !suggestion.length}
+                                    className="rounded-none px-6"
+                                >
                                     <ArrowRight size={20} />
                                 </Button>
                             </div>
 
                             {/* Options */}
                             <div className="flex">
-                                <Button variant="invisible" size="square" className="rounded-none px-6">
+                                <Button
+                                    variant="invisible"
+                                    size="square"
+                                    disabled={isOptimizing || !suggestion.length}
+                                    className="rounded-none px-6"
+                                >
                                     <BookmarkPlus size={20} />
                                 </Button>
 
-                                <Button variant="invisible" size="square" className="rounded-none rounded-br-lg px-6">
+                                <Button
+                                    variant="invisible"
+                                    size="square"
+                                    disabled={isOptimizing || !suggestion.length}
+                                    className="rounded-none rounded-br-lg px-6"
+                                >
                                     <Copy size={20} />
                                 </Button>
                             </div>

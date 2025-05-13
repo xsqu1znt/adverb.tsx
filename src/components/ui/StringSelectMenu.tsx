@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 
 // prettier-ignore
 export const stringSelectStyles: Record<StringSelectStyles, string> = {
-    primary: "border border-[var(--color-button-border)] bg-[var(--color-button-background)] text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)] focus:bg-[var(--color-button-background-hover)] focus:dark:border-[var(--color-foreground)]/50",
-    outline: "border border-[var(--color-button-border)] text-[var(--color-button-background)] dark:text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)]/10",
-    invisible: "bg-transparent text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)]/50"
+    primary: "border border-[var(--color-button-border)] bg-[var(--color-button-background)] text-[var(--color-button-foreground)] hover:bg-[var(--color-button-background-hover)] active:bg-[var(--color-button-background-hover)] focus:bg-[var(--color-button-background-hover)] focus:dark:border-[var(--color-foreground)]/50",
+    outline: "border border-[var(--color-button-border)] text-[var(--color-button-invisible-foreground)] hover:bg-[var(--color-button-invisible-background-hover)]/75 active:bg-[var(--color-button-invisible-background-hover)]/75 focus:bg-[var(--color-button-invisible-background-hover)]/75",
+    invisible: "bg-transparent text-[var(--color-button-invisible-foreground)] hover:bg-[var(--color-button-invisible-background-hover)]/75 active:bg-[var(--color-button-invisible-background-hover)]/75 focus:bg-[var(--color-button-invisible-background-hover)]/75"
 };
 
 export const stringSelectSizes: Record<StringSelectSizes, string> = {
@@ -70,7 +70,7 @@ export function StringSelectMenu(props: Props) {
         <div className={cn("relative", props.className)} ref={menuRef}>
             <button
                 className={cn(
-                    `flex w-fit cursor-pointer items-center justify-between rounded-lg ${open ? (props.direction === "top" ? "rounded-t-none" : "rounded-b-none") : ""} px-6 py-3 text-base transition-[colors,border-radius] duration-200 outline-none`,
+                    `flex w-fit cursor-pointer items-center justify-between rounded-lg ${props.disabled && "pointer-events-none opacity-50"} ${open ? (props.direction === "top" ? "rounded-t-none" : "rounded-b-none") : ""} px-6 py-3 text-base transition-[colors,border-radius] duration-100 outline-none`,
                     styleVariant,
                     styleSize,
                     styleMinWidth,
@@ -85,7 +85,7 @@ export function StringSelectMenu(props: Props) {
                     {!selected && props.placeholder ? props.placeholder : selected?.label}
                 </span>
                 <svg
-                    className={`size-4 transform-[colors,rotate] text-[var(--color-button-foreground)] duration-200 ${open ? (props.direction === "top" ? "rotate-0" : "rotate-180") : props.direction === "top" ? "rotate-180" : "rotate-0"}`}
+                    className={`size-4 transform-[colors,rotate] duration-200 ${open ? (props.direction === "top" ? "rotate-0" : "rotate-180") : props.direction === "top" ? "rotate-180" : "rotate-0"}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -111,7 +111,7 @@ export function StringSelectMenu(props: Props) {
                                 props.onOptionSelect?.(option);
                                 setOpen(false);
                             }}
-                            className={`cursor-pointer px-4 py-2 text-[var(--color-button-foreground)] hover:bg-white/10 ${selected?.id === option.id && "bg-white/10"}`}
+                            className={`cursor-pointer px-4 py-2 text-[var(--color-button-foreground)] hover:bg-white/10 focus:bg-white/10 active:bg-white/10 ${selected?.id === option.id && "bg-white/10"}`}
                         >
                             {option.label}
                         </div>

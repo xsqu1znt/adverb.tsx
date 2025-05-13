@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${poppins.variable} overflow-x-hidden antialiased`}>
+            <body className={`${poppins.variable} flex touch-pan-y flex-col overflow-x-hidden scroll-smooth antialiased`}>
                 <Navbar className="mb-12" />
                 {children}
                 <Footer className="mt-12" />
