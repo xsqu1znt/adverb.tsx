@@ -8,18 +8,7 @@ import React, { useState } from "react";
 import { TextInputArea } from "@/components/ui/TextInputArea";
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
 
-const tones = [
-    "formal",
-    "playful",
-    "urgent",
-    "professional",
-    "casual",
-    "witty",
-    "friendly",
-    "empathetic",
-    "bold",
-    "default"
-];
+const tones = ["Professional", "Formal", "Playful", "Urgent", "Casual", "Witty", "Friendly", "Empathetic", "Bold"];
 
 export default function Home() {
     const [prompt, setPrompt] = useState("");
@@ -75,6 +64,7 @@ export default function Home() {
                     <StringSelectMenu
                         id="tone-select"
                         options={tones.map(t => ({ id: t, label: t }))}
+                        // direction="top"
                         className="w-full max-w-[700px]"
                     />
                 </div>
