@@ -1,6 +1,7 @@
 export type StringSelectStyles = "primary" | "outline" | "invisible";
 export type StringSelectSizes = "sm" | "md" | "lg";
 
+import { NoTouchPropagation } from "./NoTouchPropagation";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -95,28 +96,30 @@ export function StringSelectMenu(props: Props) {
             </button>
 
             {open && (
-                <div
-                    className={cn(
-                        `dropdown no-scrollbar absolute z-10 max-h-[201px] w-fit touch-pan-y overflow-x-hidden overflow-y-auto scroll-smooth ${props.direction === "top" ? "bottom-full rounded-t-lg border-b-0" : "top-full rounded-b-lg border-t-0"} border border-[var(--color-button-border)] bg-[var(--color-button-background)]`,
-                        styleMinWidth,
-                        styleTextSize,
-                        props.className
-                    )}
-                >
-                    {props.options.map((option, idx) => (
-                        <div
-                            key={idx}
-                            onClick={() => {
-                                setSelected(option);
-                                props.onOptionSelect?.(option);
-                                setOpen(false);
-                            }}
-                            className={`cursor-pointer px-4 py-2 text-[var(--color-button-foreground)] hover:bg-white/10 focus:bg-white/10 active:bg-white/10 ${selected?.id === option.id && "bg-white/10"}`}
-                        >
-                            {option.label}
-                        </div>
-                    ))}
-                </div>
+                <NoTouchPropagation>
+                    <div
+                        className={cn(
+                            `dropdown no-scrollbar absolute z-10 max-h-[201px] w-fit touch-pan-y overflow-x-hidden overflow-y-auto scroll-smooth ${props.direction === "top" ? "bottom-full rounded-t-lg border-b-0" : "top-full rounded-b-lg border-t-0"} border border-[var(--color-button-border)] bg-[var(--color-button-background)]`,
+                            styleMinWidth,
+                            styleTextSize,
+                            props.className
+                        )}
+                    >
+                        {props.options.map((option, idx) => (
+                            <div
+                                key={idx}
+                                onClick={() => {
+                                    setSelected(option);
+                                    props.onOptionSelect?.(option);
+                                    setOpen(false);
+                                }}
+                                className={`cursor-pointer px-4 py-2 text-[var(--color-button-foreground)] hover:bg-white/10 focus:bg-white/10 active:bg-white/10 ${selected?.id === option.id && "bg-white/10"}`}
+                            >
+                                {option.label}
+                            </div>
+                        ))}
+                    </div>
+                </NoTouchPropagation>
             )}
         </div>
     );

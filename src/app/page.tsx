@@ -5,9 +5,11 @@ import { ToneType } from "./api/optimize/[tone]/route";
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
 import { TextInputArea } from "@/components/ui/TextInputArea";
 import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonSizes } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, SendHorizonal } from "lucide-react";
 import OpenAI from "openai";
+import { redirect } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const tones = ["Professional", "Formal", "Playful", "Urgent", "Casual", "Witty", "Friendly", "Empathetic", "Bold"];
 
@@ -17,6 +19,7 @@ export default function Home() {
     const [suggestion, setSuggestion] = useState("");
     const [tone, setTone] = useState<ToneType>("professional");
 
+    const [userSession, setUserSession] = useState<string | null>(null);
     const [isOptimizing, setIsOptimizing] = useState(false);
 
     useEffect(() => {
@@ -65,25 +68,42 @@ export default function Home() {
                     <h1 className="text-center text-5xl">Write ads, that convert</h1>
                 </div>
 
-                <div className="relative w-full">
-                    <TextInputArea
-                        name="user-prompt"
-                        placeholder="⚡ Put your ad here..."
-                        disabled={isOptimizing}
-                        className={`w-full ${userPrompt.length ? (userPrompt.length > 250 ? "h-50" : "h-30") : "h-15"}`}
-                        maxLength={300}
-                        onChange={e => setUserPrompt(e.target.value)}
-                    />
+                <div className="flex flex-col gap-4">
+                    <div className="relative w-full">
+                        <TextInputArea
+                            name="user-prompt"
+                            placeholder="⚡ Put your ad here..."
+                            disabled={isOptimizing}
+                            className={`w-full ${userPrompt.length ? (userPrompt.length > 250 ? "h-50" : "h-30") : "h-15"}`}
+                            maxLength={300}
+                            onChange={e => setUserPrompt(e.target.value)}
+                        />
 
-                    {/* Character count and limit */}
-                    <div className="absolute right-0 bottom-0 rounded-tl-lg rounded-br-lg bg-[var(--color-background)] px-2">
-                        <span className="text-sm opacity-50 dark:opacity-25">{userPrompt.length}/300</span>
+                        {/* Character count and limit */}
+                        <div className="absolute right-0 bottom-[0.70px] rounded-tl-lg rounded-br-lg border border-[var(--color-button-border)]/25 bg-[var(--color-background)] px-2">
+                            <span className="text-sm opacity-50 dark:opacity-25">{userPrompt.length}/300</span>
+                        </div>
                     </div>
+
+                    {/* CTA - Get Started */}
+                    <Button
+                        variant="primary"
+                        size="md"
+                        className={`w-full p-0 ${userSession ? "hidden" : ""}`}
+                        onClick={() => setUserSession(!userSession ? "signed-in" : null)}
+                    >
+                        <a href="#tone" className={cn("h-full w-full", buttonSizes.md)}>
+                            Get Started with AdVerb
+                        </a>
+                    </Button>
                 </div>
             </section>
 
             {/* Tone Select */}
-            <section id="tones" className="flex w-full max-w-[700px] flex-col gap-12">
+            <section
+                id="tone"
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession ? "hidden" : ""} sectionFadeIn`}
+            >
                 <div className="flex flex-col gap-4">
                     <h2 className="text-2xl">Step 2</h2>
 
@@ -101,7 +121,11 @@ export default function Home() {
             </section>
 
             {/* Suggestions */}
-            <section id="suggestions" className="flex w-full max-w-[700px] flex-col gap-12">
+            <section
+                id="suggestion"
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession ? "hidden" : ""} sectionFadeIn`}
+                style={{ animationDelay: "0.2s" }}
+            >
                 <div className="flex w-full max-w-[700px] flex-col gap-4">
                     <h2 className="text-2xl">Step 3</h2>
 
