@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import "../styles/globals.css";
 import "../styles/layout.css";
 import "../styles/animations.css";
+import { Sidebar } from "@/components/Sidebar";
 
 const poppins = Poppins({
     weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -30,10 +31,14 @@ export default function RootLayout({
             <body
                 className={`${poppins.variable} flex touch-pan-x touch-pan-y touch-pinch-zoom flex-col overflow-x-hidden scroll-smooth antialiased`}
             >
-                <div className="flex min-h-screen flex-col">
-                    <Navbar className="mb-12" />
-                    <div className="flex-1">{children}</div>
-                    <Footer className="mt-12" />
+                <div className="flex min-h-screen">
+                    <Sidebar />
+                    <div className="flex w-full flex-col">
+                        {/* <Navbar className="mb-12" /> */}
+                        <div className="mb-24" />
+                        <div className="flex-1">{children}</div>
+                        {/* <Footer className="mt-12" /> */}
+                    </div>
                 </div>
             </body>
         </html>

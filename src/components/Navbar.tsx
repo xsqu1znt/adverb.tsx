@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 export function Navbar(props: React.HtmlHTMLAttributes<HTMLElement>) {
     return (
-        <nav {...props} className={cn("flex w-full items-center justify-between px-8 py-4", props.className)}>
+        <nav {...props} className={cn("flex w-full items-center justify-between px-8 py-4 gap-4", props.className)}>
             <a
                 href="/"
                 className="cursor-pointer text-2xl font-medium transition-opacity duration-200 select-none hover:text-[var(--color-foreground)]/75"
