@@ -8,7 +8,7 @@ export function Footer(props: React.HtmlHTMLAttributes<HTMLElement>) {
                 props.className
             )}
         >
-            <span className="text-md opacity-75">&copy; {new Date().getFullYear()} AdVerb, Gunique Grimble</span>
+            <span className="text-md opacity-75">&copy; {new Date().getFullYear()} AdVerb, by Gunique Grimble</span>
         </footer>
     );
 }

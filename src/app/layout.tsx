@@ -30,9 +30,11 @@ export default function RootLayout({
             <body
                 className={`${poppins.variable} flex touch-pan-x touch-pan-y touch-pinch-zoom flex-col overflow-x-hidden scroll-smooth antialiased`}
             >
-                <Navbar className="mb-12" />
-                {children}
-                <Footer className="mt-12" />
+                <div className="flex min-h-screen flex-col">
+                    <Navbar className="mb-12" />
+                    <div className="flex-1">{children}</div>
+                    <Footer className="mt-12" />
+                </div>
             </body>
         </html>
     );

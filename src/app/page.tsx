@@ -87,9 +87,10 @@ export default function Home() {
 
                     {/* CTA - Get Started */}
                     <Button
-                        variant="primary"
+                        variant={!userPrompt ? "outline" : "primary"}
                         size="md"
                         className={`w-full p-0 ${userSession ? "hidden" : ""}`}
+                        disabled={!userPrompt.length}
                         onClick={() => setUserSession(!userSession ? "signed-in" : null)}
                     >
                         <a href="#tone" className={cn("h-full w-full", buttonSizes.md)}>
@@ -102,7 +103,7 @@ export default function Home() {
             {/* Tone Select */}
             <section
                 id="tone"
-                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession ? "hidden" : ""} sectionFadeIn`}
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession || !userPrompt ? "hidden" : ""} sectionFadeIn`}
             >
                 <div className="flex flex-col gap-4">
                     <h2 className="text-2xl">Step 2</h2>
@@ -123,7 +124,7 @@ export default function Home() {
             {/* Suggestions */}
             <section
                 id="suggestion"
-                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession ? "hidden" : ""} sectionFadeIn`}
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession || !userPrompt.length ? "hidden" : ""} sectionFadeIn`}
                 style={{ animationDelay: "0.2s" }}
             >
                 <div className="flex w-full max-w-[700px] flex-col gap-4">
