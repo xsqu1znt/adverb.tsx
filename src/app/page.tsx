@@ -16,20 +16,31 @@ export default function Home() {
     const [userSessionId, setUserSessionId] = useState<string | null>(null);
 
     const [userPrompt, setUserPrompt] = useState("");
+    const [optimizedSuggestion, setOptimizedSuggestion] = useState("");
     const [tone, setTone] = useState<ToneType>("professional");
 
     const [versionHistory, setVersionHistory] = useState<[string, string][]>([]);
     const [activeHistoryIndex, setActiveHistoryIndex] = useState(0);
 
-    /* Button states */
+    /* Disablable states */
+    const [isAwaitingSessionFetch, setIsAwaitingSessionFetch] = useState(false);
     const [isAwaitingOptimize, setIsAwaitingOptimize] = useState(false);
 
     const [isCreatingUserSession, setIsCreatingUserSession] = useState(false);
     const [isCopyingToClipboard, setIsCopyingToClipboard] = useState(false);
 
     useEffect(() => {
+        const currentVersion = versionHistory[activeHistoryIndex];
+        if (!currentVersion) return;
+
+        setUserPrompt(currentVersion?.[0] || "");
+        setOptimizedSuggestion(currentVersion?.[1] || "");
+    }, [activeHistoryIndex]);
+
+    useEffect(() => {
         const fetchSessionData = async () => {
             if (!searchParams.get("sessionId")) return;
+            setIsAwaitingSessionFetch(true);
 
             const res = await fetch(`/api/session/${searchParams.get("sessionId")}`, {
                 method: "GET",
@@ -38,20 +49,30 @@ export default function Home() {
 
             const { error, userPrompts, optimizedSuggestions } = (await res.json()) as {
                 error?: string;
-                userPrompts?: string[];
-                optimizedSuggestions?: string[];
+                userPrompts?: { text: string }[];
+                optimizedSuggestions?: { text: string }[];
             };
 
             if (error) {
                 console.log(error);
+                setIsAwaitingSessionFetch(false);
                 return router.push("/");
             }
 
             setUserSessionId(searchParams.get("sessionId"));
 
             if (userPrompts?.length && optimizedSuggestions?.length) {
-                setVersionHistory(userPrompts.map((userPrompt, i) => [userPrompt, optimizedSuggestions[i]]));
+                const _history: Array<[string, string]> = userPrompts.map((userPrompt, i) => [
+                    userPrompt.text,
+                    optimizedSuggestions[i].text
+                ]);
+
+                if (_history.length) {
+                    setVersionHistory(_history);
+                    setActiveHistoryIndex(_history.length - 1);
+                }
             }
+            setIsAwaitingSessionFetch(false);
         };
         fetchSessionData();
     }, []);
@@ -118,7 +139,8 @@ export default function Home() {
                         <TextInputArea
                             name="user-prompt"
                             placeholder="⚡ Put your ad here..."
-                            disabled={isAwaitingOptimize}
+                            value={userPrompt}
+                            disabled={isAwaitingSessionFetch || isAwaitingOptimize}
                             className={`w-full ${userPrompt.length ? (userPrompt.length > 250 ? "h-50" : "h-30") : "h-15"}`}
                             maxLength={300}
                             onChange={e => setUserPrompt(e.target.value)}
@@ -140,17 +162,6 @@ export default function Home() {
                     >
                         Get Started with AdVerb
                     </Button>
-                    {/* <Button
-                        variant={!userPrompt ? "outline" : "primary"}
-                        size="md"
-                        className={`w-full p-0 ${userSession ? "hidden" : ""}`}
-                        disabled={!userPrompt.length}
-                        onClick={() => createUserSession()}
-                    >
-                        <a href={`/?session=${userSession}#tone`} className={cn("h-full w-full", buttonSizes.md)}>
-                            Get Started with AdVerb
-                        </a>
-                    </Button> */}
                 </div>
             </section>
 
@@ -203,7 +214,7 @@ export default function Home() {
                     <div className="">
                         <TextInputArea
                             name="optimized-suggestion"
-                            value={versionHistory[activeHistoryIndex] || ""}
+                            value={optimizedSuggestion}
                             readOnly
                             placeholder={isAwaitingOptimize ? "Optimizing..." : "There seems to be nothing... Yet!"}
                             disabled={isAwaitingOptimize}

@@ -35,10 +35,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ton
     }
 
     const res =
-        await sql`insert into optimized_suggestions (session_id, text, tone_used, tokens_used) values (${sessionId!}, '${completion.choices[0].message.content}', '${tone}', ${completion.usage?.total_tokens || 0}) returning text`;
+        await sql`insert into optimized_suggestions (session_id, text, tone_used, tokens_used) values (${sessionId!}, ${completion.choices[0].message.content}, ${tone}, ${completion.usage?.total_tokens || 0}) returning text`;
     if (!res) {
         return NextResponse.json({ error: "Failed to process the optimized suggestion." }, { status: 500 });
     }
+
+    await sql`insert into user_prompts (session_id, text) values (${sessionId!}, ${text})`;
 
     return NextResponse.json({ optimized: res[0].text }, { status: 200 });
 }
