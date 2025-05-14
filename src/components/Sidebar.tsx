@@ -1,14 +1,17 @@
-import { FolderArchive, FolderClock, Settings, Zap } from "lucide-react";
-import { Navbar } from "./Navbar";
-import { Button } from "./ui/Button";
+import { FolderClock, Settings, Zap } from "lucide-react";
+import { Button, buttonSizes } from "./ui/Button";
 import { Footer } from "./Footer";
+import { cn } from "@/lib/utils";
 
-export function Sidebar() {
+export function Sidebar(props: React.HTMLAttributes<HTMLDivElement>) {
     return (
-        <div className="flex w-[30%] flex-col bg-black/10 px-4 py-6 dark:bg-black/25">
-            <div className="flex flex-1 flex-col gap-6 h-full">
+        <div className={cn("flex w-[30%] flex-col bg-black/10 px-4 pt-6 dark:bg-black/25", props.className)}>
+            {/* Container */}
+            <div className="flex h-full flex-1 flex-col gap-6">
+                {/* Profile & Logo Group */}
                 <div className="flex w-full items-center gap-4 px-8 py-4">
-                    <a href="/profile" className="size-10 transition-opacity duration-200 hover:opacity-75">
+                    {/* User Avatar */}
+                    <a href="/profile" className="size-9 transition-opacity duration-200 hover:opacity-75">
                         <img
                             src="https://api.dicebear.com/9.x/initials/svg?seed=Brooklynn&scale=80"
                             alt="avatar"
@@ -16,6 +19,7 @@ export function Sidebar() {
                         />
                     </a>
 
+                    {/* Logo */}
                     <a
                         href="/"
                         className="cursor-pointer text-2xl font-medium transition-opacity duration-200 select-none hover:text-[var(--color-foreground)]/75"
@@ -24,26 +28,35 @@ export function Sidebar() {
                     </a>
                 </div>
 
-                <ul>
-                    <li>
-                        <Button variant="invisible" className="w-full justify-start py-5">
-                            <Zap /> Optimize
-                        </Button>
-                    </li>
-                    <li>
-                        <Button variant="invisible" className="w-full justify-start py-5">
-                            <FolderClock /> History
-                        </Button>
-                    </li>
-                    <li>
-                        <Button variant="invisible" className="w-full justify-start py-5">
-                            <Settings /> Settings
-                        </Button>
-                    </li>
-                </ul>
+                {/* Navigation */}
+                <nav>
+                    <ul>
+                        <li>
+                            <Button variant="invisible" className="w-full justify-start p-0">
+                                <a href="/" className={cn(buttonSizes.md, "flex h-full w-full gap-2 py-5")}>
+                                    <Zap /> Optimize
+                                </a>
+                            </Button>
+                        </li>
+                        <li>
+                            <Button variant="invisible" className="w-full justify-start p-0">
+                                <a href="/history" className={cn(buttonSizes.md, "flex h-full w-full gap-2 py-5")}>
+                                    <FolderClock /> History
+                                </a>
+                            </Button>
+                        </li>
+                        <li>
+                            <Button variant="invisible" className="w-full justify-start p-0">
+                                <a href="/settings" className={cn(buttonSizes.md, "flex h-full w-full gap-2 py-5")}>
+                                    <Settings /> Settings
+                                </a>
+                            </Button>
+                        </li>
+                    </ul>
+                </nav>
             </div>
 
-            <Footer />
+            <Footer className="px-0" />
         </div>
     );
 }

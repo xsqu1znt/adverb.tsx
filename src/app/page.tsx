@@ -1,30 +1,52 @@
 "use client";
 
-import { ToneType } from "./api/optimize/[tone]/route";
+import type { ToneType } from "./api/optimize/[tone]/route";
+import type OpenAI from "openai";
 
+import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, SendHorizonal } from "lucide-react";
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
 import { TextInputArea } from "@/components/ui/TextInputArea";
-import React, { useEffect, useState } from "react";
 import { Button, buttonSizes } from "@/components/ui/Button";
-import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, SendHorizonal } from "lucide-react";
-import OpenAI from "openai";
-import { redirect } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const tones = ["Professional", "Formal", "Playful", "Urgent", "Casual", "Witty", "Friendly", "Empathetic", "Bold"];
 
 export default function Home() {
+    const router = useRouter()
+    const searchParams = useSearchParams();
+
     const [userPrompt, setUserPrompt] = useState("");
     const [lastUserPrompt, setLastUserPrompt] = useState("");
     const [suggestion, setSuggestion] = useState("");
     const [tone, setTone] = useState<ToneType>("professional");
 
-    const [userSession, setUserSession] = useState<string | null>(null);
+    const [userSession, setUserSession] = useState<string | null>(searchParams.get("sessionId") || null);
+
+    /* Button states */
     const [isOptimizing, setIsOptimizing] = useState(false);
+
+    const [isCreatingSession, setIsCreatingSession] = useState(false);
+    const [isCopyingToClipboard, setIsCopyingToClipboard] = useState(false);
 
     useEffect(() => {
         setIsOptimizing(false);
     }, [suggestion]);
+
+    const createUserSession = async () => {
+        setIsCreatingSession(true);
+
+        const res = await fetch("/api/create-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const { sessionId } = (await res.json()) as { sessionId: string };
+        router.push(`/?sessionId=${sessionId}`);
+        setUserSession(sessionId);
+        setIsCreatingSession(false);
+    };
 
     const generateSuggestion = async () => {
         if (!userPrompt) {
@@ -89,21 +111,30 @@ export default function Home() {
                     <Button
                         variant={!userPrompt ? "outline" : "primary"}
                         size="md"
+                        className={`w-full ${userSession ? "hidden" : ""}`}
+                        disabled={isCreatingSession || !userPrompt.length}
+                        onClick={() => createUserSession()}
+                    >
+                        Get Started with AdVerb
+                    </Button>
+                    {/* <Button
+                        variant={!userPrompt ? "outline" : "primary"}
+                        size="md"
                         className={`w-full p-0 ${userSession ? "hidden" : ""}`}
                         disabled={!userPrompt.length}
-                        onClick={() => setUserSession(!userSession ? "signed-in" : null)}
+                        onClick={() => createUserSession()}
                     >
-                        <a href="#tone" className={cn("h-full w-full", buttonSizes.md)}>
+                        <a href={`/?session=${userSession}#tone`} className={cn("h-full w-full", buttonSizes.md)}>
                             Get Started with AdVerb
                         </a>
-                    </Button>
+                    </Button> */}
                 </div>
             </section>
 
             {/* Tone Select */}
             <section
                 id="tone"
-                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession || !userPrompt ? "hidden" : ""} sectionFadeIn`}
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession ? "hidden" : ""} sectionFadeIn`}
             >
                 <div className="flex flex-col gap-4">
                     <h2 className="text-2xl">Step 2</h2>
@@ -124,7 +155,7 @@ export default function Home() {
             {/* Suggestions */}
             <section
                 id="suggestion"
-                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession || !userPrompt.length ? "hidden" : ""} sectionFadeIn`}
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession ? "hidden" : ""} sectionFadeIn`}
                 style={{ animationDelay: "0.2s" }}
             >
                 <div className="flex w-full max-w-[700px] flex-col gap-4">
@@ -185,8 +216,13 @@ export default function Home() {
                                 <Button
                                     variant="invisible"
                                     size="square"
-                                    disabled={isOptimizing || !suggestion.length}
+                                    disabled={isOptimizing || !suggestion.length || isCopyingToClipboard}
                                     className="rounded-none rounded-br-lg px-6"
+                                    onClick={async () => {
+                                        setIsCopyingToClipboard(true);
+                                        await navigator.clipboard.writeText(suggestion);
+                                        setIsCopyingToClipboard(false);
+                                    }}
                                 >
                                     <Copy size={20} />
                                 </Button>

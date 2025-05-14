@@ -33,6 +33,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ton
     const { text } = (await req.json()) as { text: string };
     const { tone } = await params;
 
+    if (!text || !tone) {
+        return NextResponse.json({ error: "Missing text or tone." }, { status: 400 });
+    }
+
     const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
@@ -50,6 +54,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ton
         usage: completion.usage
     };
 
-    console.log(resJSON);
     return NextResponse.json(resJSON, { status: 200 });
 }

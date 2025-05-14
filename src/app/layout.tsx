@@ -32,12 +32,21 @@ export default function RootLayout({
                 className={`${poppins.variable} flex touch-pan-x touch-pan-y touch-pinch-zoom flex-col overflow-x-hidden scroll-smooth antialiased`}
             >
                 <div className="flex min-h-screen">
-                    <Sidebar />
+                    {/* Sidebar (hidden on mobile) */}
+                    <Sidebar className="not-lg:hidden" />
+
+                    {/* Content Container */}
                     <div className="flex w-full flex-col">
-                        {/* <Navbar className="mb-12" /> */}
-                        <div className="mb-24" />
+                        {/* Navbar (hidden on desktop) */}
+                        <Navbar className="mb-12 lg:hidden" />
+                        {/* Top Spacing (for desktop only) */}
+                        <div className="mb-24 hidden lg:block" />
+
+                        {/* Main Content */}
                         <div className="flex-1">{children}</div>
-                        {/* <Footer className="mt-12" /> */}
+
+                        {/* Footer (hidden on desktop) */}
+                        <Footer className="mt-12 lg:hidden" />
                     </div>
                 </div>
             </body>
