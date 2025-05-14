@@ -1,41 +1,63 @@
 "use client";
 
-import type { ToneType } from "./api/optimize/[tone]/route";
-import type OpenAI from "openai";
-
 import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, SendHorizonal } from "lucide-react";
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
 import { TextInputArea } from "@/components/ui/TextInputArea";
-import { Button, buttonSizes } from "@/components/ui/Button";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { tones, ToneType } from "@/lib/tones";
 import { useRouter } from "next/navigation";
-
-const tones = ["Professional", "Formal", "Playful", "Urgent", "Casual", "Witty", "Friendly", "Empathetic", "Bold"];
+import { useEffect, useState } from "react";
 
 export default function Home() {
-    const router = useRouter()
+    const router = useRouter();
     const searchParams = useSearchParams();
 
+    const [userSessionId, setUserSessionId] = useState<string | null>(null);
+
     const [userPrompt, setUserPrompt] = useState("");
-    const [lastUserPrompt, setLastUserPrompt] = useState("");
-    const [suggestion, setSuggestion] = useState("");
     const [tone, setTone] = useState<ToneType>("professional");
 
-    const [userSession, setUserSession] = useState<string | null>(searchParams.get("sessionId") || null);
+    const [versionHistory, setVersionHistory] = useState<[string, string][]>([]);
+    const [activeHistoryIndex, setActiveHistoryIndex] = useState(0);
 
     /* Button states */
-    const [isOptimizing, setIsOptimizing] = useState(false);
+    const [isAwaitingOptimize, setIsAwaitingOptimize] = useState(false);
 
-    const [isCreatingSession, setIsCreatingSession] = useState(false);
+    const [isCreatingUserSession, setIsCreatingUserSession] = useState(false);
     const [isCopyingToClipboard, setIsCopyingToClipboard] = useState(false);
 
     useEffect(() => {
-        setIsOptimizing(false);
-    }, [suggestion]);
+        const fetchSessionData = async () => {
+            if (!searchParams.get("sessionId")) return;
+
+            const res = await fetch(`/api/session/${searchParams.get("sessionId")}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const { error, userPrompts, optimizedSuggestions } = (await res.json()) as {
+                error?: string;
+                userPrompts?: string[];
+                optimizedSuggestions?: string[];
+            };
+
+            if (error) {
+                console.log(error);
+                return router.push("/");
+            }
+
+            setUserSessionId(searchParams.get("sessionId"));
+
+            if (userPrompts?.length && optimizedSuggestions?.length) {
+                setVersionHistory(userPrompts.map((userPrompt, i) => [userPrompt, optimizedSuggestions[i]]));
+            }
+        };
+        fetchSessionData();
+    }, []);
 
     const createUserSession = async () => {
-        setIsCreatingSession(true);
+        setIsCreatingUserSession(true);
 
         const res = await fetch("/api/create-session", {
             method: "POST",
@@ -44,37 +66,38 @@ export default function Home() {
 
         const { sessionId } = (await res.json()) as { sessionId: string };
         router.push(`/?sessionId=${sessionId}`);
-        setUserSession(sessionId);
-        setIsCreatingSession(false);
+        setUserSessionId(sessionId);
+        setIsCreatingUserSession(false);
     };
 
-    const generateSuggestion = async () => {
+    const getOptimizedSuggestion = async () => {
+        /* TODO: Send a toast notification instead. */
         if (!userPrompt) {
             alert("Please enter a prompt!");
             return;
         }
 
-        setIsOptimizing(true);
+        setIsAwaitingOptimize(true);
 
         const res = await fetch(`/api/optimize/${tone}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: userPrompt })
+            body: JSON.stringify({ text: userPrompt, sessionId: userSessionId })
         });
 
-        const { error, suggestion, usage } = (await res.json()) as {
-            error?: string;
-            suggestion?: string;
-            usage?: OpenAI.CompletionUsage;
-        };
+        const { error, optimized } = (await res.json()) as { error?: string; optimized?: string };
+
+        setIsAwaitingOptimize(false);
 
         if (error) {
-            setSuggestion(error);
-        } else if (suggestion) {
-            setSuggestion(suggestion);
+            /* TODO: Send a toast notification instead. */
+            alert(error);
         }
 
-        setLastUserPrompt(userPrompt);
+        if (optimized) {
+            setVersionHistory(prev => [...prev, [userPrompt, optimized || ""]]);
+            setActiveHistoryIndex(versionHistory.length - 0);
+        }
     };
 
     return (
@@ -95,7 +118,7 @@ export default function Home() {
                         <TextInputArea
                             name="user-prompt"
                             placeholder="⚡ Put your ad here..."
-                            disabled={isOptimizing}
+                            disabled={isAwaitingOptimize}
                             className={`w-full ${userPrompt.length ? (userPrompt.length > 250 ? "h-50" : "h-30") : "h-15"}`}
                             maxLength={300}
                             onChange={e => setUserPrompt(e.target.value)}
@@ -111,8 +134,8 @@ export default function Home() {
                     <Button
                         variant={!userPrompt ? "outline" : "primary"}
                         size="md"
-                        className={`w-full ${userSession ? "hidden" : ""}`}
-                        disabled={isCreatingSession || !userPrompt.length}
+                        className={`w-full ${userSessionId ? "hidden" : ""}`}
+                        disabled={isCreatingUserSession || !userPrompt.length}
                         onClick={() => createUserSession()}
                     >
                         Get Started with AdVerb
@@ -134,7 +157,7 @@ export default function Home() {
             {/* Tone Select */}
             <section
                 id="tone"
-                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession ? "hidden" : ""} sectionFadeIn`}
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSessionId ? "hidden" : ""} sectionFadeIn`}
             >
                 <div className="flex flex-col gap-4">
                     <h2 className="text-2xl">Step 2</h2>
@@ -142,9 +165,9 @@ export default function Home() {
                     <label htmlFor="tone-select">Choose the tone you're going for</label>
                     <StringSelectMenu
                         id="tone-select"
-                        options={tones.map(t => ({ id: t, label: t }))}
+                        options={Object.entries(tones).map(([k, v]) => ({ id: k, label: v.name }))}
                         direction="top"
-                        disabled={isOptimizing}
+                        disabled={isAwaitingOptimize}
                         className="w-full"
                         variant="outline"
                         onOptionSelect={option => setTone(option.id as ToneType)}
@@ -155,29 +178,36 @@ export default function Home() {
             {/* Suggestions */}
             <section
                 id="suggestion"
-                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSession ? "hidden" : ""} sectionFadeIn`}
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSessionId ? "hidden" : ""} sectionFadeIn`}
                 style={{ animationDelay: "0.2s" }}
             >
                 <div className="flex w-full max-w-[700px] flex-col gap-4">
                     <h2 className="text-2xl">Step 3</h2>
 
                     <div className="flex items-center justify-between gap-4">
-                        <label htmlFor="prompt-suggestion">Check out your optimized ad!</label>
-                        <Button variant="primary" size="sm" disabled={isOptimizing} onClick={() => generateSuggestion()}>
-                            {lastUserPrompt && userPrompt === lastUserPrompt ? <Dices size={18} /> : ""}
-                            {lastUserPrompt && userPrompt === lastUserPrompt ? "Reroll" : "Optimize"}
-                            {lastUserPrompt && userPrompt === lastUserPrompt ? "" : <SendHorizonal size={18} />}
+                        <label htmlFor="optimized-suggestion">Check out your optimized ad!</label>
+
+                        {/* prettier-ignore */}
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            disabled={isAwaitingOptimize}
+                            onClick={() => getOptimizedSuggestion()}
+                        >
+                            {userPrompt === versionHistory[activeHistoryIndex]?.[0] ? <Dices size={18} /> : ""}
+                            {userPrompt === versionHistory[activeHistoryIndex]?.[0] ? "Reroll" : "Optimize"}
+                            {userPrompt === versionHistory[activeHistoryIndex]?.[0] ? "" : <SendHorizonal size={18} />}
                         </Button>
                     </div>
 
                     <div className="">
                         <TextInputArea
-                            name="prompt-suggestion"
-                            value={suggestion}
+                            name="optimized-suggestion"
+                            value={versionHistory[activeHistoryIndex] || ""}
                             readOnly
-                            placeholder={isOptimizing ? "Optimizing..." : "There seems to be nothing... Yet!"}
-                            disabled={isOptimizing}
-                            className={`w-full rounded-b-none ${suggestion.length ? (suggestion.length > 250 ? "h-50" : "h-30") : "h-15"} cursor-default`}
+                            placeholder={isAwaitingOptimize ? "Optimizing..." : "There seems to be nothing... Yet!"}
+                            disabled={isAwaitingOptimize}
+                            className={`w-full rounded-b-none ${versionHistory[activeHistoryIndex]?.[1].length ? (versionHistory[activeHistoryIndex][1].length > 250 ? "h-50" : "h-30") : "h-15"} cursor-default`}
                         />
 
                         <div className="flex w-full items-center justify-between rounded-b-lg border border-t-0 border-[var(--color-foreground)]/60 bg-[var(--color-background)] dark:border-[var(--color-foreground)]/15">
@@ -186,8 +216,13 @@ export default function Home() {
                                 <Button
                                     variant="invisible"
                                     size="square"
-                                    disabled={isOptimizing || !suggestion.length}
+                                    disabled={
+                                        isAwaitingOptimize ||
+                                        !versionHistory[activeHistoryIndex] ||
+                                        !versionHistory[activeHistoryIndex - 1]
+                                    }
                                     className="rounded-none rounded-bl-lg px-6"
+                                    onClick={() => setActiveHistoryIndex(prev => prev - 1)}
                                 >
                                     <ArrowLeft size={20} />
                                 </Button>
@@ -195,8 +230,13 @@ export default function Home() {
                                 <Button
                                     variant="invisible"
                                     size="square"
-                                    disabled={isOptimizing || !suggestion.length}
+                                    disabled={
+                                        isAwaitingOptimize ||
+                                        !versionHistory[activeHistoryIndex] ||
+                                        !versionHistory[activeHistoryIndex + 1]
+                                    }
                                     className="rounded-none px-6"
+                                    onClick={() => setActiveHistoryIndex(prev => prev + 1)}
                                 >
                                     <ArrowRight size={20} />
                                 </Button>
@@ -207,7 +247,7 @@ export default function Home() {
                                 <Button
                                     variant="invisible"
                                     size="square"
-                                    disabled={isOptimizing || !suggestion.length}
+                                    disabled={isAwaitingOptimize || !versionHistory[activeHistoryIndex]?.[1]}
                                     className="rounded-none px-6"
                                 >
                                     <BookmarkPlus size={20} />
@@ -216,11 +256,15 @@ export default function Home() {
                                 <Button
                                     variant="invisible"
                                     size="square"
-                                    disabled={isOptimizing || !suggestion.length || isCopyingToClipboard}
+                                    disabled={
+                                        isAwaitingOptimize ||
+                                        !versionHistory[activeHistoryIndex]?.[1] ||
+                                        isCopyingToClipboard
+                                    }
                                     className="rounded-none rounded-br-lg px-6"
                                     onClick={async () => {
                                         setIsCopyingToClipboard(true);
-                                        await navigator.clipboard.writeText(suggestion);
+                                        await navigator.clipboard.writeText(versionHistory[activeHistoryIndex][1]);
                                         setIsCopyingToClipboard(false);
                                     }}
                                 >
