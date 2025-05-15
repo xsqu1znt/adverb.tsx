@@ -37,6 +37,7 @@ export interface StringSelectMenuOption {
 }
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    isLoading?: boolean;
     placeholder?: string;
     variant?: StringSelectStyles;
     direction?: "top" | "bottom";
@@ -45,7 +46,10 @@ interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     onOptionSelect?: (option: StringSelectMenuOption) => void;
 }
 
+/* TODO: Add keyboard support. */
 export function StringSelectMenu(props: Props) {
+    const { isLoading, onOptionSelect, ...rest } = props;
+
     const styleVariant = stringSelectStyles[props.variant || "primary"];
     const styleSize = stringSelectSizes[props.size || "md"];
     const styleMinWidth = stringSelectMinWidths[props.size || "md"];
@@ -68,8 +72,9 @@ export function StringSelectMenu(props: Props) {
     }, []);
 
     return (
-        <div className={cn("relative", props.className)} ref={menuRef}>
+        <div className={cn(`relative ${isLoading && "loadingGlow"}`, props.className)} ref={menuRef}>
             <button
+                {...rest}
                 className={cn(
                     `flex w-fit cursor-pointer items-center justify-between rounded-lg ease-in-out ${props.disabled && "pointer-events-none opacity-50"} ${open ? (props.direction === "top" ? "rounded-t-none" : "rounded-b-none") : ""} px-6 py-3 text-base transition-[colors,border-radius] duration-100 outline-none`,
                     styleVariant,
@@ -110,7 +115,7 @@ export function StringSelectMenu(props: Props) {
                                 key={idx}
                                 onClick={() => {
                                     setSelected(option);
-                                    props.onOptionSelect?.(option);
+                                    onOptionSelect?.(option);
                                     setOpen(false);
                                 }}
                                 className={`cursor-pointer px-4 py-2 text-[var(--color-button-foreground)] hover:bg-white/10 focus:bg-white/10 active:bg-white/10 ${selected?.id === option.id && "bg-white/10"}`}

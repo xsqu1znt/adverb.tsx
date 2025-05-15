@@ -17,17 +17,17 @@ export default function Home() {
 
     const [userPrompt, setUserPrompt] = useState("");
     const [optimizedSuggestion, setOptimizedSuggestion] = useState("");
-    const [tone, setTone] = useState<ToneType>("professional");
+    const [selectedTone, setSelectedTone] = useState<ToneType>("professional");
 
     const [versionHistory, setVersionHistory] = useState<[string, string][]>([]);
     const [activeHistoryIndex, setActiveHistoryIndex] = useState(0);
 
-    /* Disablable states */
-    const [isAwaitingSessionFetch, setIsAwaitingSessionFetch] = useState(false);
-    const [isAwaitingOptimize, setIsAwaitingOptimize] = useState(false);
+    /* Input states */
+    const [isLoading, setIsLoading] = useState(false);
 
-    const [isCreatingUserSession, setIsCreatingUserSession] = useState(false);
+    const [isAwaitingOptimize, setIsAwaitingOptimize] = useState(false);
     const [isCopyingToClipboard, setIsCopyingToClipboard] = useState(false);
+    const [isUserPromptDiff, setIsUserPromptDiff] = useState(true);
 
     useEffect(() => {
         const currentVersion = versionHistory[activeHistoryIndex];
@@ -35,14 +35,22 @@ export default function Home() {
 
         setUserPrompt(currentVersion?.[0] || "");
         setOptimizedSuggestion(currentVersion?.[1] || "");
-    }, [activeHistoryIndex]);
+    }, [activeHistoryIndex, versionHistory]);
+
+    useEffect(() => {
+        if (!userPrompt) {
+            setIsUserPromptDiff(true);
+            return;
+        }
+        setIsUserPromptDiff(userPrompt === versionHistory[activeHistoryIndex]?.[0]);
+    }, [userPrompt, optimizedSuggestion, activeHistoryIndex, versionHistory]);
 
     useEffect(() => {
         const fetchSessionData = async () => {
             if (!searchParams.get("sessionId")) return;
-            setIsAwaitingSessionFetch(true);
+            setIsLoading(true);
 
-            const res = await fetch(`/api/session/${searchParams.get("sessionId")}`, {
+            const res = await fetch(`/api/sessions/${searchParams.get("sessionId")}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" }
             });
@@ -55,7 +63,7 @@ export default function Home() {
 
             if (error) {
                 console.log(error);
-                setIsAwaitingSessionFetch(false);
+                setIsLoading(false);
                 return router.push("/");
             }
 
@@ -72,13 +80,13 @@ export default function Home() {
                     setActiveHistoryIndex(_history.length - 1);
                 }
             }
-            setIsAwaitingSessionFetch(false);
+            setIsLoading(false);
         };
         fetchSessionData();
     }, []);
 
     const createUserSession = async () => {
-        setIsCreatingUserSession(true);
+        setIsLoading(true);
 
         const res = await fetch("/api/create-session", {
             method: "POST",
@@ -88,7 +96,7 @@ export default function Home() {
         const { sessionId } = (await res.json()) as { sessionId: string };
         router.push(`/?sessionId=${sessionId}`);
         setUserSessionId(sessionId);
-        setIsCreatingUserSession(false);
+        setIsLoading(false);
     };
 
     const getOptimizedSuggestion = async () => {
@@ -98,9 +106,10 @@ export default function Home() {
             return;
         }
 
+        setIsLoading(true);
         setIsAwaitingOptimize(true);
 
-        const res = await fetch(`/api/optimize/${tone}`, {
+        const res = await fetch(`/api/optimize/${selectedTone}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: userPrompt, sessionId: userSessionId })
@@ -108,6 +117,7 @@ export default function Home() {
 
         const { error, optimized } = (await res.json()) as { error?: string; optimized?: string };
 
+        setIsLoading(false);
         setIsAwaitingOptimize(false);
 
         if (error) {
@@ -123,41 +133,48 @@ export default function Home() {
 
     return (
         <main className="flex w-full flex-col items-center gap-12 px-6">
-            {/* Hero */}
+            {/* SECTION - Hero */}
             <section id="hero" className="flex w-full max-w-[700px] flex-col gap-12">
+                {/* HEADER (hidden on desktop) */}
                 <div className="flex flex-col gap-1 md:hidden">
                     <h1 className="text-5xl">Write ads</h1>
                     <h1 className="text-5xl">that convert</h1>
                 </div>
 
+                {/* HEADER (hidden on mobile) */}
                 <div className="hidden md:block">
                     <h1 className="text-center text-5xl">Write ads, that convert</h1>
                 </div>
 
+                {/* CTA - Get started */}
                 <div className="flex flex-col gap-4">
+                    {/* CONTAINER OUTER - User prompt */}
                     <div className="relative w-full">
+                        {/* INPUT - User prompt */}
                         <TextInputArea
                             name="user-prompt"
                             placeholder="⚡ Put your ad here..."
                             value={userPrompt}
-                            disabled={isAwaitingSessionFetch || isAwaitingOptimize}
+                            disabled={isLoading}
+                            isLoading={isLoading}
                             className={`w-full ${userPrompt.length ? (userPrompt.length > 250 ? "h-50" : "h-30") : "h-15"}`}
                             maxLength={300}
                             onChange={e => setUserPrompt(e.target.value)}
                         />
 
-                        {/* Character count and limit */}
+                        {/* char count and limit */}
                         <div className="absolute right-0 bottom-[0.70px] rounded-tl-lg rounded-br-lg border border-[var(--color-button-border)]/25 bg-[var(--color-background)] px-2">
                             <span className="text-sm opacity-50 dark:opacity-25">{userPrompt.length}/300</span>
                         </div>
                     </div>
 
-                    {/* CTA - Get Started */}
+                    {/* CTA BUTTON - Get Started */}
                     <Button
                         variant={!userPrompt ? "outline" : "primary"}
                         size="md"
+                        disabled={isLoading || !userPrompt.length}
+                        isLoading={isLoading}
                         className={`w-full ${userSessionId ? "hidden" : ""}`}
-                        disabled={isCreatingUserSession || !userPrompt.length}
                         onClick={() => createUserSession()}
                     >
                         Get Started with AdVerb
@@ -165,87 +182,109 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Tone Select */}
+            {/* SECTION - Tone Select */}
             <section
                 id="tone"
                 className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSessionId ? "hidden" : ""} sectionFadeIn`}
             >
+                {/* CONTAINER OUTER - Tone Select */}
                 <div className="flex flex-col gap-4">
+                    {/* HEADER */}
                     <h2 className="text-2xl">Step 2</h2>
 
-                    <label htmlFor="tone-select">Choose the tone you're going for</label>
-                    <StringSelectMenu
-                        id="tone-select"
-                        options={Object.entries(tones).map(([k, v]) => ({ id: k, label: v.name }))}
-                        direction="top"
-                        disabled={isAwaitingOptimize}
-                        className="w-full"
-                        variant="outline"
-                        onOptionSelect={option => setTone(option.id as ToneType)}
-                    />
+                    {/* CONTAINER INNER - Tone select */}
+                    <div className="flex flex-col justify-between gap-4">
+                        <label htmlFor="tone-select">Choose the tone you're going for</label>
+                        {/* INPUT - Tone select */}
+                        <StringSelectMenu
+                            id="tone-select"
+                            variant="outline"
+                            direction="top"
+                            options={Object.entries(tones).map(([k, v]) => ({ id: k, label: v.name }))}
+                            disabled={isLoading}
+                            isLoading={isLoading}
+                            className="w-full"
+                            onOptionSelect={option => setSelectedTone(option.id as ToneType)}
+                        />
+                    </div>
                 </div>
             </section>
 
-            {/* Suggestions */}
+            {/* SECTION - Optimized Suggestion */}
             <section
                 id="suggestion"
                 className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSessionId ? "hidden" : ""} sectionFadeIn`}
                 style={{ animationDelay: "0.2s" }}
             >
-                <div className="flex w-full max-w-[700px] flex-col gap-4">
+                {/* CONTAINER OUTER - Optimized suggestion */}
+                <div className="flex w-full flex-col gap-4">
+                    {/* HEADER */}
                     <h2 className="text-2xl">Step 3</h2>
 
+                    {/* CONTAINER INNER - Optimized suggestion */}
                     <div className="flex items-center justify-between gap-4">
                         <label htmlFor="optimized-suggestion">Check out your optimized ad!</label>
 
-                        {/* prettier-ignore */}
+                        {/* TODO: Add global indicator that the userPrompt is different from the current selected version. */}
+                        {/* CTA BUTTON - Optimize/Reroll */}
                         <Button
                             variant="primary"
                             size="sm"
-                            disabled={isAwaitingOptimize}
+                            disabled={isLoading}
+                            isLoading={isLoading}
                             onClick={() => getOptimizedSuggestion()}
                         >
-                            {userPrompt === versionHistory[activeHistoryIndex]?.[0] ? <Dices size={18} /> : ""}
-                            {userPrompt === versionHistory[activeHistoryIndex]?.[0] ? "Reroll" : "Optimize"}
-                            {userPrompt === versionHistory[activeHistoryIndex]?.[0] ? "" : <SendHorizonal size={18} />}
+                            {isUserPromptDiff ? <Dices size={18} /> : ""}
+                            {isUserPromptDiff ? "Reroll" : "Optimize"}
+                            {isUserPromptDiff ? "" : <SendHorizonal size={18} />}
                         </Button>
                     </div>
 
-                    <div className="">
+                    {/* CONTAINER OUTER - Optimized suggestion - Output */}
+                    <div>
+                        {/* OUTPUT - Optimized suggestion */}
                         <TextInputArea
+                            readOnly
                             name="optimized-suggestion"
                             value={optimizedSuggestion}
-                            readOnly
                             placeholder={isAwaitingOptimize ? "Optimizing..." : "There seems to be nothing... Yet!"}
-                            disabled={isAwaitingOptimize}
-                            className={`w-full rounded-b-none ${versionHistory[activeHistoryIndex]?.[1].length ? (versionHistory[activeHistoryIndex][1].length > 250 ? "h-50" : "h-30") : "h-15"} cursor-default`}
+                            disabled={isLoading}
+                            isLoading={isLoading}
+                            className={`w-full rounded-b-none ${optimizedSuggestion.length ? (optimizedSuggestion.length > 250 ? "h-50" : "h-30") : "h-15"} cursor-default`}
                         />
 
-                        <div className="flex w-full items-center justify-between rounded-b-lg border border-t-0 border-[var(--color-foreground)]/60 bg-[var(--color-background)] dark:border-[var(--color-foreground)]/15">
-                            {/* History Navigation */}
+                        {/* CONTAINER OUTER - Output controls */}
+                        <div
+                            className={`${isLoading && "loadingGlow"} flex w-full items-center justify-between rounded-b-lg border border-t-0 border-[var(--color-foreground)]/60 bg-[var(--color-background)] dark:border-[var(--color-foreground)]/15`}
+                        >
+                            {/* CONTAINER - History navigation - Left */}
                             <div className="flex">
+                                {/* BUTTON - History back */}
                                 <Button
                                     variant="invisible"
                                     size="square"
                                     disabled={
-                                        isAwaitingOptimize ||
+                                        isLoading ||
                                         !versionHistory[activeHistoryIndex] ||
                                         !versionHistory[activeHistoryIndex - 1]
                                     }
+                                    isLoading={isLoading}
                                     className="rounded-none rounded-bl-lg px-6"
                                     onClick={() => setActiveHistoryIndex(prev => prev - 1)}
                                 >
                                     <ArrowLeft size={20} />
                                 </Button>
 
+                                {/* BUTTON - History forward */}
                                 <Button
                                     variant="invisible"
                                     size="square"
                                     disabled={
-                                        isAwaitingOptimize ||
+                                        isLoading ||
                                         !versionHistory[activeHistoryIndex] ||
                                         !versionHistory[activeHistoryIndex + 1]
                                     }
+                                    isLoading={isLoading}
                                     className="rounded-none px-6"
                                     onClick={() => setActiveHistoryIndex(prev => prev + 1)}
                                 >
@@ -253,25 +292,25 @@ export default function Home() {
                                 </Button>
                             </div>
 
-                            {/* Options */}
+                            {/* CONTAINER - Version options - Right */}
                             <div className="flex">
+                                {/* BUTTON - Bookmark suggestion */}
                                 <Button
                                     variant="invisible"
                                     size="square"
-                                    disabled={isAwaitingOptimize || !versionHistory[activeHistoryIndex]?.[1]}
+                                    disabled={isLoading || !versionHistory[activeHistoryIndex]?.[1]}
+                                    isLoading={isLoading}
                                     className="rounded-none px-6"
                                 >
                                     <BookmarkPlus size={20} />
                                 </Button>
 
+                                {/* BUTTON - Copy suggestion */}
                                 <Button
                                     variant="invisible"
                                     size="square"
-                                    disabled={
-                                        isAwaitingOptimize ||
-                                        !versionHistory[activeHistoryIndex]?.[1] ||
-                                        isCopyingToClipboard
-                                    }
+                                    disabled={isLoading || !versionHistory[activeHistoryIndex]?.[1] || isCopyingToClipboard}
+                                    isLoading={isLoading}
                                     className="rounded-none rounded-br-lg px-6"
                                     onClick={async () => {
                                         setIsCopyingToClipboard(true);

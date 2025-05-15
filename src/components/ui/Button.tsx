@@ -19,16 +19,18 @@ export const buttonSizes: Record<ButtonSizes, string> = {
 };
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    isLoading?: boolean;
     variant?: ButtonStyles;
     size?: ButtonSizes;
 }
 
 export function Button(props: Props) {
+    const { isLoading, ...rest } = props;
     return (
         <button
-            {...props}
+            {...rest}
             className={cn(
-                `flex w-fit ${props.disabled && "pointer-events-none opacity-50"} cursor-pointer items-center justify-center gap-2 rounded-lg font-medium text-nowrap transition-colors duration-200 outline-none`,
+                `flex w-fit ${isLoading && "loadingGlow"} ${props.disabled && "pointer-events-none opacity-50"} cursor-pointer items-center justify-center gap-2 rounded-lg font-medium text-nowrap transition-colors duration-200 outline-none`,
                 buttonStyles[props.variant || "primary"],
                 buttonSizes[props.size || "md"],
                 props.className
