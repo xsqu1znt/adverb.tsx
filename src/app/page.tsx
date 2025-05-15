@@ -23,7 +23,7 @@ export default function Home() {
     const [activeHistoryIndex, setActiveHistoryIndex] = useState(0);
 
     /* Input states */
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const [isAwaitingOptimize, setIsAwaitingOptimize] = useState(false);
     const [isCopyingToClipboard, setIsCopyingToClipboard] = useState(false);
@@ -47,8 +47,10 @@ export default function Home() {
 
     useEffect(() => {
         const fetchSessionData = async () => {
-            if (!searchParams.get("sessionId")) return;
-            setIsLoading(true);
+            if (!searchParams.get("sessionId")) {
+                setIsLoading(false);
+                return;
+            }
 
             const res = await fetch(`/api/sessions/${searchParams.get("sessionId")}`, {
                 method: "GET",
