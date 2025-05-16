@@ -2,10 +2,10 @@
 
 import { FolderClock, Settings, Zap } from "lucide-react";
 import { Button, buttonSizes } from "./ui/Button";
-import { Footer } from "./Footer";
-import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
+import { Footer } from "./Footer";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export function Sidebar(props: React.HTMLAttributes<HTMLDivElement>) {
     const searchParams = useSearchParams();
