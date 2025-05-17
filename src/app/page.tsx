@@ -1,11 +1,11 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, SendHorizonal } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, Ear, SendHorizonal, Zap } from "lucide-react";
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
 import { TextInputArea } from "@/components/ui/TextInputArea";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { tones, ToneType } from "@/lib/tones";
+import { tones, ToneType } from "@/constants/tones";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -192,11 +192,13 @@ export default function Home() {
                 {/* CONTAINER OUTER - Tone Select */}
                 <div className="flex flex-col gap-4">
                     {/* HEADER */}
-                    <h2 className="text-2xl">Step 2</h2>
+                    <h2 className="text-2xl"> Step 2</h2>
 
                     {/* CONTAINER INNER - Tone select */}
                     <div className="flex flex-col justify-between gap-4">
-                        <label htmlFor="tone-select">Choose the tone you're going for</label>
+                        <label htmlFor="tone-select" className="flex items-center gap-1">
+                            <Ear size={18} /> Choose the tone you're going for
+                        </label>
                         {/* INPUT - Tone select */}
                         <StringSelectMenu
                             id="tone-select"
@@ -225,7 +227,9 @@ export default function Home() {
 
                     {/* CONTAINER INNER - Optimized suggestion */}
                     <div className="flex items-center justify-between gap-4">
-                        <label htmlFor="optimized-suggestion">Check out your optimized ad!</label>
+                        <label htmlFor="optimized-suggestion" className="flex items-center gap-1">
+                            <Zap size={18} /> Check out your optimized ad!
+                        </label>
 
                         {/* TODO: Add global indicator that the userPrompt is different from the current selected version. */}
                         {/* CTA BUTTON - Optimize/Reroll */}

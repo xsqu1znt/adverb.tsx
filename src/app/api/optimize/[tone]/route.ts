@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { tones, ToneType } from "@/lib/tones";
+import { tones, ToneType } from "@/constants/tones";
 import openai from "@/lib/openai";
 import sql from "@/lib/db";
 
