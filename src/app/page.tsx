@@ -6,10 +6,11 @@ import { TextAreaInput } from "@/components/ui/TextAreaInput";
 import { tones, ToneType } from "@/constants/tones";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { useRouter } from "next/navigation";
+import { copyToClipboard } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function HomePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -133,6 +134,12 @@ export default function Home() {
         }
     };
 
+    const copy = async (text: string) => {
+        setIsCopyingToClipboard(true);
+        await copyToClipboard(text);
+        setIsCopyingToClipboard(false);
+    };
+
     return (
         <main className="flex w-full flex-col items-center gap-12 px-6">
             {/* SECTION - Hero */}
@@ -231,7 +238,6 @@ export default function Home() {
                             <Zap size={18} className="text-yellow-500" fill="currentColor" /> Check out your optimized ad!
                         </label>
 
-                        {/* TODO: Add global indicator that the userPrompt is different from the current selected version. */}
                         {/* CTA BUTTON - Optimize/Reroll */}
                         <Button
                             variant="primary"
@@ -318,11 +324,7 @@ export default function Home() {
                                     disabled={isLoading || !versionHistory[activeHistoryIndex]?.[1] || isCopyingToClipboard}
                                     isLoading={isLoading}
                                     className="rounded-none rounded-br-lg px-6"
-                                    onClick={async () => {
-                                        setIsCopyingToClipboard(true);
-                                        await navigator.clipboard.writeText(versionHistory[activeHistoryIndex][1]);
-                                        setIsCopyingToClipboard(false);
-                                    }}
+                                    onClick={() => copy(versionHistory[activeHistoryIndex][1])}
                                 >
                                     <Copy size={20} />
                                 </Button>

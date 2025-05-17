@@ -46,7 +46,7 @@ export function Sidebar(props: React.HTMLAttributes<HTMLDivElement>) {
                             <Button variant="invisible" className="w-full justify-start p-0">
                                 <a
                                     href={`/${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
-                                    className={cn(buttonSizes.md, "flex h-full w-full gap-2 py-5")}
+                                    className={cn(buttonSizes.md, "flex h-full w-full items-center gap-2 py-5")}
                                 >
                                     <Zap /> Optimize
                                 </a>
@@ -56,7 +56,7 @@ export function Sidebar(props: React.HTMLAttributes<HTMLDivElement>) {
                             <Button variant="invisible" className="w-full justify-start p-0">
                                 <a
                                     href={`/history${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
-                                    className={cn(buttonSizes.md, "flex h-full w-full gap-2 py-5")}
+                                    className={cn(buttonSizes.md, "flex h-full w-full items-center gap-2 py-5")}
                                 >
                                     <FolderClock /> History
                                 </a>
@@ -66,7 +66,7 @@ export function Sidebar(props: React.HTMLAttributes<HTMLDivElement>) {
                             <Button variant="invisible" className="w-full justify-start p-0">
                                 <a
                                     href={`/settings${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
-                                    className={cn(buttonSizes.md, "flex h-full w-full gap-2 py-5")}
+                                    className={cn(buttonSizes.md, "flex h-full w-full items-center gap-2 py-5")}
                                 >
                                     <Settings /> Settings
                                 </a>

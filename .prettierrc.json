@@ -1,16 +1,16 @@
 {
-	"tabWidth": 4,
-	"useTabs": false,
-	"printWidth": 125,
+    "tabWidth": 4,
+    "useTabs": false,
+    "printWidth": 125,
 
-	"trailingComma": "none",
-	"arrowParens": "avoid",
+    "trailingComma": "none",
+    "arrowParens": "avoid",
 
-	"bracketSpacing": true,
-	"singleQuote": false,
-	"semi": true,
+    "bracketSpacing": true,
+    "singleQuote": false,
+    "semi": true,
 
-	"endOfLine": "lf",
+    "endOfLine": "lf",
 
-	"plugins": ["prettier-plugin-tailwindcss"]
+    "plugins": ["prettier-plugin-tailwindcss"]
 }

@@ -1,17 +1,16 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { SimpleDropdown } from "./ui/SimpleDropdown";
+import { FolderClock, Settings, User, Zap } from "lucide-react";
+import { Button, buttonSizes } from "./ui/Button";
 
 export function Navbar(props: React.HtmlHTMLAttributes<HTMLElement>) {
     const searchParams = useSearchParams();
 
     const [userSessionId, setUserSessionId] = useState<string | null>(searchParams.get("sessionId"));
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-
-    const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
 
     const menuRef = useRef<HTMLDivElement>(null);
     const profileButtonRef = useRef<HTMLButtonElement>(null);
@@ -25,7 +24,6 @@ export function Navbar(props: React.HtmlHTMLAttributes<HTMLElement>) {
                 !profileButtonRef.current.contains(e.target as Node)
             ) {
                 setProfileDropdownOpen(false);
-                setHighlightedIndex(null);
             }
         };
 
@@ -43,17 +41,6 @@ export function Navbar(props: React.HtmlHTMLAttributes<HTMLElement>) {
                     AdVerb
                 </a>
 
-                {/* <a
-                href={`/profile${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
-                className="size-10 transition-opacity duration-200 hover:opacity-75"
-            >
-                <img
-                    src="https://api.dicebear.com/9.x/initials/svg?seed=Brooklynn&scale=80"
-                    alt="avatar"
-                    className="rounded-full"
-                />
-            </a> */}
-
                 <div className="relative z-50">
                     <button
                         ref={profileButtonRef}
@@ -70,38 +57,64 @@ export function Navbar(props: React.HtmlHTMLAttributes<HTMLElement>) {
                     {profileDropdownOpen && (
                         <div
                             ref={menuRef}
-                            className="dropdown absolute top-full right-0 z-20 w-40 rounded-lg border border-[var(--color-foreground)]/10 bg-[var(--color-background)] shadow-md dark:border-[var(--color-foreground)]/30"
+                            className="dropdown absolute top-full right-0 z-20 w-[40vw] touch-none rounded-lg border border-[var(--color-foreground)]/10 bg-[var(--color-background)] shadow-md dark:border-[var(--color-foreground)]/30"
                         >
-                            {[{ label: "Profile" }, { label: "Optimize" }, { label: "History" }, { label: "Sign out" }].map(
-                                (option, index) => (
-                                    <div
-                                        key={index}
-                                        role="option"
-                                        aria-selected={highlightedIndex === index}
-                                        tabIndex={0}
-                                        className={`fadeSlideDown flex cursor-pointer gap-2 px-4 py-4 text-lg ${index === highlightedIndex ? "bg-white/15" : ""}`}
-                                        style={{ animationDelay: `${index * 50}ms` }}
-                                        onClick={() => {
-                                            setProfileDropdownOpen(false);
-                                        }}
-                                        onMouseEnter={() => setHighlightedIndex(index)}
-                                        onKeyDown={e => {
-                                            if (e.key === "Enter" || e.key === "Space") {
-                                                setProfileDropdownOpen(false);
-                                            }
-                                        }}
-                                    >
-                                        <span>{option.label}</span>
-                                    </div>
-                                )
-                            )}
+                            <Button
+                                variant="invisible"
+                                className="w-full justify-start p-0"
+                                onClick={() => setProfileDropdownOpen(false)}
+                            >
+                                <a
+                                    href={`/profile${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
+                                    className={cn(buttonSizes.md, "flex h-full w-full items-center gap-2 py-4")}
+                                >
+                                    <User size={18} /> Profile
+                                </a>
+                            </Button>
+                            <Button
+                                variant="invisible"
+                                className="w-full justify-start p-0"
+                                onClick={() => setProfileDropdownOpen(false)}
+                            >
+                                <a
+                                    href={`/${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
+                                    className={cn(buttonSizes.md, "flex h-full w-full items-center gap-2 py-4")}
+                                >
+                                    <Zap size={18} /> Optimize
+                                </a>
+                            </Button>
+                            <Button
+                                variant="invisible"
+                                className="w-full justify-start p-0"
+                                onClick={() => setProfileDropdownOpen(false)}
+                            >
+                                <a
+                                    href={`/history${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
+                                    className={cn(buttonSizes.md, "flex h-full w-full items-center gap-2 py-4")}
+                                >
+                                    <FolderClock size={18} /> History
+                                </a>
+                            </Button>
+                            <Button
+                                variant="invisible"
+                                className="w-full justify-start p-0"
+                                onClick={() => setProfileDropdownOpen(false)}
+                            >
+                                <a
+                                    href={`/settings${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
+                                    className={cn(buttonSizes.md, "flex h-full w-full items-center gap-2 py-4")}
+                                >
+                                    <Settings size={18} /> Settings
+                                </a>
+                            </Button>
                         </div>
                     )}
                 </div>
             </nav>
 
+            {/* Backdrop - Menu Open */}
             <div
-                className={`${profileDropdownOpen ? "absolute" : "hidden"} fadeIn top-0 left-0 z-10 h-screen w-screen bg-black/10 grayscale-100 backdrop-blur-xs`}
+                className={`${profileDropdownOpen ? "fixed" : "hidden"} fadeIn top-0 left-0 z-10 h-screen w-screen bg-black/15`}
             />
         </div>
     );

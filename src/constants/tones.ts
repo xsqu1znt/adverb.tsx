@@ -58,4 +58,3 @@ export const tones = {
         color: "255, 112, 67"
     }
 };
-
