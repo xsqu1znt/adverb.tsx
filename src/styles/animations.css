@@ -14,13 +14,44 @@
     }
 }
 
-.sectionFadeIn {
-    animation: fadeSlide 200ms ease-out forwards;
+.fadeIn {
+    animation: fadeIn 100ms ease-in-out forwards;
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fadeSlideDown {
+    animation: fadeSlideDown 100ms ease-in-out forwards;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+@keyframes fadeSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fadeSlideRight {
+    animation: fadeSlideRight 400ms ease-in-out forwards;
     opacity: 0;
     transform: translateX(-100px);
 }
 
-@keyframes fadeSlide {
+@keyframes fadeSlideRight {
     from {
         opacity: 0;
         transform: translateX(-100px);

@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 
-export function NoTouchPropagation({ children }: { children: React.ReactNode }) {
+export function NoTouchPropagation(props: React.HtmlHTMLAttributes<HTMLDivElement>) {
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -20,5 +20,5 @@ export function NoTouchPropagation({ children }: { children: React.ReactNode }) 
         };
     }, []);
 
-    return <div ref={ref}>{children}</div>;
+    return <div ref={ref}>{props.children}</div>;
 }

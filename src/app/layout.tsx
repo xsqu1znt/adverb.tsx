@@ -43,7 +43,7 @@ export default function RootLayout({
                         <div className="mb-24 hidden lg:block" />
 
                         {/* Main Content */}
-                        <div className="flex-1 mb-24">{children}</div>
+                        <div className="mb-24 flex-1">{children}</div>
 
                         {/* Footer (hidden on desktop) */}
                         <Footer className="mt-12 lg:hidden" />

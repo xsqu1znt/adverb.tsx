@@ -2,10 +2,10 @@
 
 import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, Ear, SendHorizonal, Zap } from "lucide-react";
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
-import { TextInputArea } from "@/components/ui/TextInputArea";
+import { TextAreaInput } from "@/components/ui/TextAreaInput";
+import { tones, ToneType } from "@/constants/tones";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { tones, ToneType } from "@/constants/tones";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -153,7 +153,7 @@ export default function Home() {
                     {/* CONTAINER OUTER - User prompt */}
                     <div className="relative w-full">
                         {/* INPUT - User prompt */}
-                        <TextInputArea
+                        <TextAreaInput
                             name="user-prompt"
                             placeholder="⚡ Put your ad here..."
                             value={userPrompt}
@@ -165,7 +165,7 @@ export default function Home() {
                         />
 
                         {/* char count and limit */}
-                        <div className="absolute right-0 bottom-[0.70px] rounded-tl-lg rounded-br-lg border border-[var(--color-button-border)]/25 bg-[var(--color-background)] px-2">
+                        <div className="absolute right-0 bottom-0 rounded-tl-lg rounded-br-lg border border-[var(--color-button-border)]/25 bg-[var(--color-background)] px-2">
                             <span className="text-sm opacity-50 dark:opacity-25">{userPrompt.length}/300</span>
                         </div>
                     </div>
@@ -187,7 +187,7 @@ export default function Home() {
             {/* SECTION - Tone Select */}
             <section
                 id="tone"
-                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSessionId ? "hidden" : ""} sectionFadeIn`}
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSessionId ? "hidden" : ""} fadeSlideRight`}
             >
                 {/* CONTAINER OUTER - Tone Select */}
                 <div className="flex flex-col gap-4">
@@ -197,7 +197,7 @@ export default function Home() {
                     {/* CONTAINER INNER - Tone select */}
                     <div className="flex flex-col justify-between gap-4">
                         <label htmlFor="tone-select" className="flex items-center gap-1">
-                            <Ear size={18} /> Choose the tone you're going for
+                            <Ear size={18} className="text-gray-500" /> Choose the tone you're going for
                         </label>
                         {/* INPUT - Tone select */}
                         <StringSelectMenu
@@ -217,7 +217,7 @@ export default function Home() {
             {/* SECTION - Optimized Suggestion */}
             <section
                 id="suggestion"
-                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSessionId ? "hidden" : ""} sectionFadeIn`}
+                className={`flex w-full max-w-[700px] flex-col gap-12 ${!userSessionId ? "hidden" : ""} fadeSlideRight`}
                 style={{ animationDelay: "0.2s" }}
             >
                 {/* CONTAINER OUTER - Optimized suggestion */}
@@ -228,7 +228,7 @@ export default function Home() {
                     {/* CONTAINER INNER - Optimized suggestion */}
                     <div className="flex items-center justify-between gap-4">
                         <label htmlFor="optimized-suggestion" className="flex items-center gap-1">
-                            <Zap size={18} /> Check out your optimized ad!
+                            <Zap size={18} className="text-yellow-500" fill="currentColor" /> Check out your optimized ad!
                         </label>
 
                         {/* TODO: Add global indicator that the userPrompt is different from the current selected version. */}
@@ -249,7 +249,7 @@ export default function Home() {
                     {/* CONTAINER OUTER - Optimized suggestion - Output */}
                     <div>
                         {/* OUTPUT - Optimized suggestion */}
-                        <TextInputArea
+                        <TextAreaInput
                             readOnly
                             name="optimized-suggestion"
                             value={optimizedSuggestion}

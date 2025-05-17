@@ -2,11 +2,11 @@ import { NoTouchPropagation } from "./NoTouchPropagation";
 import { cn } from "@/lib/utils";
 import React from "react";
 
-export interface TextInputAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextAreaInputProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     isLoading?: boolean;
 }
 
-export function TextInputArea(props: TextInputAreaProps) {
+export function TextAreaInput(props: TextAreaInputProps) {
     const { isLoading, ...rest } = props;
 
     return (

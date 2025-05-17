@@ -107,7 +107,8 @@ export default function History() {
                             return (
                                 <div
                                     key={index}
-                                    className={`grid w-full flex-nowrap items-center gap-4 not-lg:grid-rows-4 lg:grid-cols-4 ${index !== versionHistory.length - 1 && "border-b"} border-[var(--color-foreground)]/10 px-6 py-4`}
+                                    className={`fadeSlideDown grid w-full flex-nowrap items-center gap-4 not-lg:grid-rows-4 lg:grid-cols-4 ${index !== versionHistory.length - 1 && "border-b"} border-[var(--color-foreground)]/10 px-6 py-4`}
+                                    style={{ animationDelay: `${index * 100}ms` }}
                                 >
                                     <span className="text-md opacity-50">{eta(new Date(prompt.created_at).getTime())}</span>
                                     <span

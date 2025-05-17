@@ -1,6 +1,22 @@
 export type StringSelectStyles = "primary" | "outline" | "invisible";
 export type StringSelectSizes = "sm" | "md" | "lg";
 
+export interface StringSelectMenuOption {
+    id: string;
+    label: string;
+    description?: string;
+}
+
+interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    isLoading?: boolean;
+    placeholder?: string;
+    variant?: StringSelectStyles;
+    direction?: "top" | "bottom";
+    size?: StringSelectSizes;
+    options: StringSelectMenuOption[];
+    onOptionSelect?: (option: StringSelectMenuOption) => void;
+}
+
 import { NoTouchPropagation } from "./NoTouchPropagation";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -29,22 +45,6 @@ export const stringSelectTextSizes: Record<StringSelectSizes, string> = {
     md: "text-base",
     lg: "text-lg"
 };
-
-export interface StringSelectMenuOption {
-    id: string;
-    label: string;
-    description?: string;
-}
-
-interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    isLoading?: boolean;
-    placeholder?: string;
-    variant?: StringSelectStyles;
-    direction?: "top" | "bottom";
-    size?: StringSelectSizes;
-    options: StringSelectMenuOption[];
-    onOptionSelect?: (option: StringSelectMenuOption) => void;
-}
 
 /* TODO: Add keyboard support. */
 export function StringSelectMenu(props: Props) {
