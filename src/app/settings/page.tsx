@@ -1,8 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Settings, Share } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Settings } from "lucide-react";
 
 export default function SettingsPage() {
     const searchParams = useSearchParams();
