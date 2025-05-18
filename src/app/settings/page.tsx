@@ -1,12 +1,16 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Settings } from "lucide-react";
-import { useState } from "react";
+import { Settings, Share } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
     const searchParams = useSearchParams();
     const [userSessionId, setUserSessionId] = useState<string | null>(searchParams.get("sessionId"));
+
+    useEffect(() => {
+        setUserSessionId(searchParams.get("sessionId"));
+    }, [searchParams.get("sessionId")]);
 
     return (
         <main className="flex w-full flex-col items-center gap-12 px-6">
@@ -18,7 +22,7 @@ export default function SettingsPage() {
             </div>
 
             {/* NO SETTINGS */}
-            <span className="text-md text-center">🚧 Settings coming soon! 🚧</span>
+            <span className="text-md text-center">Settings coming soon!</span>
         </main>
     );
 }

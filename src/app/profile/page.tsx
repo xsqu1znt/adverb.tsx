@@ -13,7 +13,7 @@ export default function ProfilePage() {
             </div>
 
             {/* NO PROFILE */}
-            <span className="text-md text-center">🚧 Profiles coming soon! 🚧</span>
+            <span className="text-md text-center">Profiles coming soon!</span>
         </main>
     );
 }

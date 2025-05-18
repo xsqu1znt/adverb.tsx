@@ -1,5 +1,7 @@
 "use client";
 
+import { SessionHistoryAPIResponse } from "@/types/Sessions";
+
 import { BookmarkPlus, Clock, Copy, Ear, FolderClock, SendHorizonal } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { copyToClipboard, eta } from "@/lib/utils";
@@ -39,24 +41,23 @@ export default function HistoryPage() {
                 return;
             }
 
-            const res = await fetch(`/api/sessions/${searchParams.get("sessionId")}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" }
-            });
+            const { error, exists, userPrompts, optimizedSuggestions }: SessionHistoryAPIResponse = await fetch(
+                `/api/sessions/${searchParams.get("sessionId")}?type=history`,
+                { method: "GET", headers: { "Content-Type": "application/json" } }
+            ).then(res => res.json());
 
-            const { error, userPrompts, optimizedSuggestions } = (await res.json()) as {
-                error?: string;
-                userPrompts?: { text: string }[];
-                optimizedSuggestions?: { text: string }[];
-            };
+            if (!exists) {
+                setIsLoading(false);
+                return router.push("/history");
+            }
+
+            setUserSessionId(searchParams.get("sessionId"));
 
             if (error) {
                 console.log(error);
                 setIsLoading(false);
-                return router.push("/");
+                return;
             }
-
-            setUserSessionId(searchParams.get("sessionId"));
 
             if (userPrompts?.length && optimizedSuggestions?.length) {
                 const _history = userPrompts.map((userPrompt, i) => ({
@@ -112,67 +113,71 @@ export default function HistoryPage() {
                 >
                     {/* Blocks */}
                     {versionHistory.length ? (
-                        versionHistory.map(({ prompt, suggestion }, index) => {
-                            return (
-                                <div
-                                    key={index}
-                                    className={`fadeSlideDown flex w-full flex-col flex-nowrap gap-4 lg:grid lg:grid-cols-4 lg:items-center ${index !== versionHistory.length - 1 && "border-b"} border-[var(--color-foreground)]/10 px-6 py-4`}
-                                    style={{ animationDelay: `${index * 100}ms` }}
-                                >
-                                    {/* Copy & Date (hidden on mobile) */}
-                                    <span className="text-md hidden items-center gap-2 opacity-50 lg:flex">
-                                        <Button
-                                            id="copy-suggestion"
-                                            variant="invisible"
-                                            size="square"
-                                            disabled={isCopyingToClipboard}
-                                            className="not-lg:hidden"
-                                            onClick={() => copy(suggestion.text)}
-                                        >
-                                            <Copy size={18} />
-                                        </Button>
-
-                                        {eta(new Date(prompt.created_at).getTime())}
-                                    </span>
-
-                                    {/* TONE */}
-                                    <span
-                                        className={`flex w-fit items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-nowrap`}
-                                        style={{
-                                            backgroundColor: `rgba(${tones[suggestion.tone_used as keyof typeof tones].color}, 0.15)`
-                                        }}
+                        versionHistory
+                            .sort(
+                                (a, b) => new Date(b.prompt.created_at).getTime() - new Date(a.prompt.created_at).getTime()
+                            )
+                            .map(({ prompt, suggestion }, index) => {
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`fadeSlideDown flex w-full flex-col flex-nowrap gap-4 lg:grid lg:grid-cols-4 lg:items-center ${index !== versionHistory.length - 1 && "border-b"} border-[var(--color-foreground)]/10 px-6 py-4`}
+                                        style={{ animationDelay: `${index * 100}ms` }}
                                     >
-                                        {toneIcons[suggestion.tone_used as keyof typeof toneIcons]}
-                                        {`${suggestion.tone_used[0].toUpperCase()}${suggestion.tone_used.slice(1)}`}
-                                    </span>
+                                        {/* Copy & Date (hidden on mobile) */}
+                                        <span className="text-md hidden items-center gap-2 opacity-50 lg:flex">
+                                            <Button
+                                                id="copy-suggestion"
+                                                variant="invisible"
+                                                size="square"
+                                                disabled={isCopyingToClipboard}
+                                                className="not-lg:hidden"
+                                                onClick={() => copy(suggestion.text)}
+                                            >
+                                                <Copy size={18} />
+                                            </Button>
 
-                                    {/* PROMPT & SUGGESTION */}
-                                    <span className="text-md no-scrollbar w-full p-2 not-lg:rounded-md not-lg:bg-[var(--color-foreground)]/5 lg:max-w-50 lg:overflow-x-auto lg:text-nowrap">
-                                        {prompt.text}
-                                    </span>
-                                    <span className="text-md no-scrollbar w-full p-2 not-lg:rounded-md not-lg:bg-[var(--color-foreground)]/5 lg:max-w-50 lg:overflow-x-auto lg:text-nowrap">
-                                        {suggestion.text}
-                                    </span>
-
-                                    {/* Copy & Date (hidden on desktop) */}
-                                    <div className="flex w-full items-center justify-between gap-4 lg:hidden">
-                                        <span className="text-md opacity-50 lg:hidden">
                                             {eta(new Date(prompt.created_at).getTime())}
                                         </span>
-                                        <Button
-                                            id="copy-suggestion"
-                                            variant="invisible"
-                                            size="square"
-                                            disabled={isCopyingToClipboard}
-                                            onClick={() => copy(suggestion.text)}
+
+                                        {/* TONE */}
+                                        <span
+                                            className={`flex w-fit items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-nowrap`}
+                                            style={{
+                                                backgroundColor: `rgba(${tones[suggestion.tone_used as keyof typeof tones].color}, 0.15)`
+                                            }}
                                         >
-                                            <Copy size={20} />
-                                            Suggestion
-                                        </Button>
+                                            {toneIcons[suggestion.tone_used as keyof typeof toneIcons]}
+                                            {`${suggestion.tone_used[0].toUpperCase()}${suggestion.tone_used.slice(1)}`}
+                                        </span>
+
+                                        {/* PROMPT & SUGGESTION */}
+                                        <span className="text-md no-scrollbar w-full p-2 not-lg:rounded-md not-lg:bg-[var(--color-foreground)]/5 lg:max-w-50 lg:overflow-x-auto lg:text-nowrap">
+                                            {prompt.text}
+                                        </span>
+                                        <span className="text-md no-scrollbar w-full p-2 not-lg:rounded-md not-lg:bg-[var(--color-foreground)]/5 lg:max-w-50 lg:overflow-x-auto lg:text-nowrap">
+                                            {suggestion.text}
+                                        </span>
+
+                                        {/* Copy & Date (hidden on desktop) */}
+                                        <div className="flex w-full items-center justify-between gap-4 lg:hidden">
+                                            <span className="text-md opacity-50 lg:hidden">
+                                                {eta(new Date(prompt.created_at).getTime())}
+                                            </span>
+                                            <Button
+                                                id="copy-suggestion"
+                                                variant="invisible"
+                                                size="square"
+                                                disabled={isCopyingToClipboard}
+                                                onClick={() => copy(suggestion.text)}
+                                            >
+                                                <Copy size={20} />
+                                                Suggestion
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })
+                                );
+                            })
                     ) : (
                         <span className="text-md text-center">You have no history recorded for this session</span>
                     )}

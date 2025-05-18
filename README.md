@@ -12,7 +12,7 @@ AdVerb is a lightweight AI-powered editor that helps marketers craft high-perfor
 
 ## 🛠 Tech Stack
 
-- **Frontend**: NextJs (App Router) + Tailwind CSS + Custom Styled Components
+- **Frontend**: NextJs (App Router) + Tailwind CSS + Custom Styled Components + System based light/dark theme
 - **AI**: OpenAI API (GPT-4o mini)
 - **Backend**: NextJs API routes
 - **Database**: Supabase

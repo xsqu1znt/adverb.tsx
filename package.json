@@ -6,7 +6,7 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "pretty": "prettier --write \"./**/*.{ts,json}\""
+        "pretty": "prettier --write \"./**/*.{ts,tsx,json}\""
     },
     "dependencies": {
         "clsx": "^2.1.1",

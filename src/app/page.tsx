@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, Ear, SendHorizonal, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookmarkPlus, Copy, Dices, Ear, SendHorizonal, Share, Zap } from "lucide-react";
 import { StringSelectMenu } from "@/components/ui/StringSelectMenu";
 import { TextAreaInput } from "@/components/ui/TextAreaInput";
 import { tones, ToneType } from "@/constants/tones";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { copyToClipboard } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { SessionHistoryAPIResponse } from "@/types/Sessions";
 
 export default function HomePage() {
     const router = useRouter();
@@ -31,46 +32,29 @@ export default function HomePage() {
     const [isUserPromptDiff, setIsUserPromptDiff] = useState(true);
 
     useEffect(() => {
-        const currentVersion = versionHistory[activeHistoryIndex];
-        if (!currentVersion) return;
-
-        setUserPrompt(currentVersion?.[0] || "");
-        setOptimizedSuggestion(currentVersion?.[1] || "");
-    }, [activeHistoryIndex, versionHistory]);
-
-    useEffect(() => {
-        if (!userPrompt) {
-            setIsUserPromptDiff(true);
-            return;
-        }
-        setIsUserPromptDiff(userPrompt === versionHistory[activeHistoryIndex]?.[0]);
-    }, [userPrompt, optimizedSuggestion, activeHistoryIndex, versionHistory]);
-
-    useEffect(() => {
         const fetchSessionData = async () => {
             if (!searchParams.get("sessionId")) {
                 setIsLoading(false);
                 return;
             }
 
-            const res = await fetch(`/api/sessions/${searchParams.get("sessionId")}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" }
-            });
+            const { error, exists, userPrompts, optimizedSuggestions }: SessionHistoryAPIResponse = await fetch(
+                `/api/sessions/${searchParams.get("sessionId")}?type=history`,
+                { method: "GET", headers: { "Content-Type": "application/json" } }
+            ).then(res => res.json());
 
-            const { error, userPrompts, optimizedSuggestions } = (await res.json()) as {
-                error?: string;
-                userPrompts?: { text: string }[];
-                optimizedSuggestions?: { text: string }[];
-            };
-
-            if (error) {
-                console.log(error);
+            if (!exists) {
                 setIsLoading(false);
                 return router.push("/");
             }
 
             setUserSessionId(searchParams.get("sessionId"));
+
+            if (error) {
+                console.log(error);
+                setIsLoading(false);
+                return;
+            }
 
             if (userPrompts?.length && optimizedSuggestions?.length) {
                 const _history: Array<[string, string]> = userPrompts.map((userPrompt, i) => [
@@ -86,7 +70,27 @@ export default function HomePage() {
             setIsLoading(false);
         };
         fetchSessionData();
-    }, []);
+    }, [userSessionId]);
+
+    useEffect(() => {
+        setUserSessionId(searchParams.get("sessionId"));
+    }, [searchParams.get("sessionId")]);
+
+    useEffect(() => {
+        const currentVersion = versionHistory[activeHistoryIndex];
+        if (!currentVersion) return;
+
+        setUserPrompt(currentVersion?.[0] || "");
+        setOptimizedSuggestion(currentVersion?.[1] || "");
+    }, [activeHistoryIndex, versionHistory]);
+
+    useEffect(() => {
+        if (!userPrompt) {
+            setIsUserPromptDiff(true);
+            return;
+        }
+        setIsUserPromptDiff(userPrompt === versionHistory[activeHistoryIndex]?.[0]);
+    }, [userPrompt, optimizedSuggestion, activeHistoryIndex, versionHistory]);
 
     const createUserSession = async () => {
         setIsLoading(true);
@@ -313,6 +317,7 @@ export default function HomePage() {
                                     disabled={isLoading || !versionHistory[activeHistoryIndex]?.[1]}
                                     isLoading={isLoading}
                                     className="rounded-none px-6"
+                                    onClick={() => alert("Bookmark feature coming soon!")}
                                 >
                                     <BookmarkPlus size={20} />
                                 </Button>
@@ -331,6 +336,18 @@ export default function HomePage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Share session */}
+                    {userSessionId && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => copy(`${location.origin}/?sessionId=${userSessionId}`)}
+                        >
+                            <Share size={18} /> Share this Session
+                        </Button>
+                    )}
                 </div>
             </section>
         </main>

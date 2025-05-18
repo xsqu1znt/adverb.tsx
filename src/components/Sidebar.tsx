@@ -1,16 +1,47 @@
 "use client";
 
-import { FolderClock, Settings, Zap } from "lucide-react";
+import { SessionAvatarAPIResponse } from "@/types/Sessions";
+
+import { FolderClock, Settings, User, Zap } from "lucide-react";
 import { Button, buttonSizes } from "./ui/Button";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Footer } from "./Footer";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export function Sidebar(props: React.HTMLAttributes<HTMLDivElement>) {
     const searchParams = useSearchParams();
 
     const [userSessionId, setUserSessionId] = useState<string | null>(searchParams.get("sessionId"));
+    const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!userSessionId) return;
+
+        const fetchSessionData = async () => {
+            const { error, avatarUrl }: SessionAvatarAPIResponse = await fetch(
+                `/api/sessions/${userSessionId}?type=avatar`,
+                {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" }
+                }
+            ).then(res => res.json());
+
+            if (avatarUrl) {
+                setUserAvatarUrl(avatarUrl);
+            }
+
+            if (error) {
+                console.error(error);
+            }
+        };
+
+        fetchSessionData();
+    }, [userSessionId]);
+
+    useEffect(() => {
+        setUserSessionId(searchParams.get("sessionId"));
+    }, [searchParams.get("sessionId")]);
 
     return (
         <div className={cn("flex w-[30%] flex-col bg-black/10 px-4 pt-6 dark:bg-black/25", props.className)}>
@@ -23,16 +54,16 @@ export function Sidebar(props: React.HTMLAttributes<HTMLDivElement>) {
                         href={`/profile${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
                         className="size-9 transition-opacity duration-200 hover:opacity-75"
                     >
-                        <img
-                            src="https://api.dicebear.com/9.x/initials/svg?seed=Brooklynn&scale=80"
-                            alt="avatar"
-                            className="rounded-full"
-                        />
+                        {userAvatarUrl ? (
+                            <img src={userAvatarUrl} alt="avatar" className="rounded-full" />
+                        ) : (
+                            <img src="/avatar.svg" alt="avatar" className="rounded-full" />
+                        )}
                     </a>
 
                     {/* Logo */}
                     <a
-                        href={`/${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
+                        href="/"
                         className="cursor-pointer text-2xl font-medium transition-opacity duration-200 select-none hover:text-[var(--color-foreground)]/75"
                     >
                         AdVerb

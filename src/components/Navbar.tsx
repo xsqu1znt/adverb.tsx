@@ -1,19 +1,47 @@
 "use client";
 
+import { SessionAvatarAPIResponse } from "@/types/Sessions";
+
+import { FolderClock, Settings, User, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Button, buttonSizes } from "./ui/Button";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { FolderClock, Settings, User, Zap } from "lucide-react";
-import { Button, buttonSizes } from "./ui/Button";
 
 export function Navbar(props: React.HtmlHTMLAttributes<HTMLElement>) {
     const searchParams = useSearchParams();
 
     const [userSessionId, setUserSessionId] = useState<string | null>(searchParams.get("sessionId"));
+    const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
     const menuRef = useRef<HTMLDivElement>(null);
     const profileButtonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (!userSessionId) return;
+
+        const fetchSessionData = async () => {
+            const { error, avatarUrl }: SessionAvatarAPIResponse = await fetch(
+                `/api/sessions/${userSessionId}?type=avatar`,
+                { method: "GET", headers: { "Content-Type": "application/json" } }
+            ).then(res => res.json());
+
+            if (avatarUrl) {
+                setUserAvatarUrl(avatarUrl);
+            }
+
+            if (error) {
+                console.error(error);
+            }
+        };
+
+        fetchSessionData();
+    }, [userSessionId]);
+
+    useEffect(() => {
+        setUserSessionId(searchParams.get("sessionId"));
+    }, [searchParams.get("sessionId")]);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -35,7 +63,7 @@ export function Navbar(props: React.HtmlHTMLAttributes<HTMLElement>) {
         <div className="relative">
             <nav {...props} className={cn("flex w-full items-center justify-between gap-4 px-8 py-4", props.className)}>
                 <a
-                    href={`/${userSessionId ? `?sessionId=${userSessionId}` : ""}`}
+                    href="/"
                     className="cursor-pointer text-2xl font-medium transition-opacity duration-200 select-none hover:text-[var(--color-foreground)]/75"
                 >
                     AdVerb
@@ -47,11 +75,11 @@ export function Navbar(props: React.HtmlHTMLAttributes<HTMLElement>) {
                         className="size-10 cursor-pointer transition-opacity duration-200 hover:opacity-75"
                         onClick={() => setProfileDropdownOpen(prev => !prev)}
                     >
-                        <img
-                            src="https://api.dicebear.com/9.x/initials/svg?seed=Brooklynn&scale=80"
-                            alt="avatar"
-                            className="rounded-full"
-                        />
+                        {userAvatarUrl ? (
+                            <img src={userAvatarUrl} alt="avatar" className="rounded-full" />
+                        ) : (
+                            <img src="/avatar.svg" alt="avatar" className="rounded-full" />
+                        )}
                     </button>
 
                     {profileDropdownOpen && (
