@@ -31,7 +31,8 @@ AdVerb is a lightweight AI-powered editor that helps marketers craft high-perfor
 3. Set up enviroment variables:
     ```env
     OPENAI_KEY=your-openai-key
-    DB_URI=supabase-uri
+    SUPABASE_URL=your-supabase-url
+    SUPABASE_ANON_KEY=your-supabase-anon-key
     ```
 4. Install dependencies:
     ```bash
