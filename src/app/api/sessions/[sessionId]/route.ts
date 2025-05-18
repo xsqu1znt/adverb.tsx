@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import sql from "@/lib/db";
+import supabase from "@/lib/db";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ sessionId?: string }> }) {
     const { sessionId } = await params;
@@ -7,30 +7,57 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ sess
     const type = url.searchParams.get("type");
 
     if (!sessionId) {
-        return NextResponse.json({ error: "Missing session ID." }, { status: 400 });
+        return NextResponse.json({ error: "Missing session ID." }, { status: 404 });
     }
 
-    const sessionExists = await sql`select 1 from sessions where session_id = ${sessionId}`;
-    if (!sessionExists.length) {
-        return NextResponse.json({ error: "Session does not exist." }, { status: 404 });
+    const { error: sessionExistsError, data: sessionExists } = await supabase
+        .from("sessions")
+        .select("session_id")
+        .eq("session_id", sessionId);
+
+    if (sessionExistsError || !sessionExists) {
+        return NextResponse.json({ error: "User session does not exist." }, { status: 404 });
     }
 
     let data;
 
-    if (type === "avatar") {
-        const [{ avatar_url: avatarUrl }] = await sql`select avatar_url from sessions where session_id = ${sessionId}`;
-        data = { exists: avatarUrl !== undefined, avatarUrl: avatarUrl || null };
-    } else if (type === "history") {
-        const userPrompts = await sql`select * from user_prompts where session_id = ${sessionId}`;
-        const optimizedSuggestions = await sql`select * from optimized_suggestions where session_id = ${sessionId}`;
-        data = {
-            exists: userPrompts && optimizedSuggestions ? true : false,
-            userPrompts: userPrompts || [],
-            optimizedSuggestions: optimizedSuggestions || []
-        };
-    } else {
-        data = { error: "Session fetch type not provided." };
+    switch (type) {
+        case "avatar":
+            const { error: sessionAvatarError, data: sessionAvatar } = await supabase
+                .from("sessions")
+                .select("avatar_url")
+                .eq("session_id", sessionId)
+                .single();
+
+            data = sessionAvatarError
+                ? { error: sessionAvatarError }
+                : { exists: data ? true : false, avatarUrl: sessionAvatar?.avatar_url || null };
+            break;
+
+        case "history":
+            const { error: userPromptsError, data: userPrompts } = await supabase
+                .from("user_prompts")
+                .select("*")
+                .eq("session_id", sessionId);
+            const { error: optimizedSuggestionsError, data: optimizedSuggestions } = await supabase
+                .from("optimized_suggestions")
+                .select("*")
+                .eq("session_id", sessionId);
+
+            data =
+                userPromptsError || optimizedSuggestionsError
+                    ? { error: userPromptsError || optimizedSuggestionsError }
+                    : {
+                          exists: userPrompts && optimizedSuggestions ? true : false,
+                          userPrompts: userPrompts || [],
+                          optimizedSuggestions: optimizedSuggestions || []
+                      };
+            break;
+
+        default:
+            data = { error: "Session fetch type not provided." };
+            break;
     }
 
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(data, { status: data?.error ? 404 : 200 });
 }

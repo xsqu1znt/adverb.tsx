@@ -342,6 +342,8 @@ export default function HomePage() {
                         <Button
                             variant="outline"
                             size="sm"
+                            disabled={isLoading}
+                            isLoading={isLoading}
                             className="w-full"
                             onClick={() => copy(`${location.origin}/?sessionId=${userSessionId}`)}
                         >

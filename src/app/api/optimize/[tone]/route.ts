@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tones, ToneType } from "@/constants/tones";
 import openai from "@/lib/openai";
-import sql from "@/lib/db";
+import supabase from "@/lib/db";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ tone?: ToneType }> }) {
     const { text, sessionId } = (await req.json()) as { text?: string; sessionId?: string };
     const { tone } = await params;
 
-    const sessionExists = await sql`select COUNT(1) from sessions where session_id = ${sessionId || "0"}`;
-
-    if (!sessionExists) {
+    const { error: sessionExistsError, data: sessionExists } = await supabase
+        .from("sessions")
+        .select("session_id")
+        .eq("session_id", sessionId)
+        .single();
+    if (sessionExistsError || !sessionExists) {
         return NextResponse.json({ error: "User session does not exist." }, { status: 404 });
     }
 
     if (!text) {
-        return NextResponse.json({ error: "Missing user prompt content." }, { status: 400 });
+        return NextResponse.json({ error: "Missing user prompt text." }, { status: 400 });
     }
 
     if (!tone || !Object.hasOwn(tones, tone.toLowerCase())) {
@@ -34,13 +37,31 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ton
         return NextResponse.json({ error: "OpenAI was unable to process this request." }, { status: 500 });
     }
 
-    const res =
-        await sql`insert into optimized_suggestions (session_id, text, tone_used, tokens_used) values (${sessionId!}, ${completion.choices[0].message.content}, ${tone}, ${completion.usage?.total_tokens || 0}) returning text`;
-    if (!res) {
+    const [{ error: optimizationError, data: optimization }, { error: userPromptError, data: userPrompt }] =
+        await Promise.all([
+            supabase
+                .from("optimized_suggestions")
+                .insert([
+                    {
+                        session_id: sessionId,
+                        text: completion.choices[0].message.content,
+                        tone_used: tone,
+                        tokens_used: completion.usage?.total_tokens || 0
+                    }
+                ])
+                .select("text")
+                .single(),
+
+            supabase
+                .from("user_prompts")
+                .insert([{ session_id: sessionId, text: text }])
+                .select("text")
+                .single()
+        ]);
+
+    if (optimizationError || userPromptError) {
         return NextResponse.json({ error: "Failed to process the optimized suggestion." }, { status: 500 });
     }
 
-    await sql`insert into user_prompts (session_id, text) values (${sessionId!}, ${text})`;
-
-    return NextResponse.json({ optimized: res[0].text }, { status: 200 });
+    return NextResponse.json({ optimized: optimization.text }, { status: 200 });
 }

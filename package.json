@@ -9,6 +9,7 @@
         "pretty": "prettier --write \"./**/*.{ts,tsx,json}\""
     },
     "dependencies": {
+        "@supabase/supabase-js": "^2.49.4",
         "clsx": "^2.1.1",
         "lucide-react": "^0.509.0",
         "next": "15.3.2",
