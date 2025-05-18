@@ -1,6 +1,6 @@
 # AdVerb – AI Copywriting Optimizer for SMS & Ads
 
-AdVerb is a lightweight AI-powered editor that helps marketers craft high-performing SMS and ad copy. It uses OpenAI’s GPT model to analyze your message and suggest optimized versions based on tone, clarity, and engagement goals.
+AdVerb is a lightweight AI-powered editor that helps marketers craft high-performing SMS and ad copies. It uses OpenAI’s GPT model to analyze your message and suggest optimized versions based on tone, clarity, and engagement goals.
 
 ## ✨ Features
 

@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 
 import { Poppins } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
+import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
 
 import "../styles/globals.css";
 import "../styles/layout.css";
 import "../styles/animations.css";
-import { Sidebar } from "@/components/Sidebar";
 
 const poppins = Poppins({
     weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -18,7 +18,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
     title: "AdVerb",
-    description: ""
+    description: "Lightweight AI-powered editor that helps marketers craft high-performing SMS and ad copies",
+    keywords: "sms, ad, copy, ai, marketing, editor, writing, tool"
 };
 
 export default function RootLayout({
