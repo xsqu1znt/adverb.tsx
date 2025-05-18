@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
+import { LoaderCircle } from "lucide-react";
 import { Suspense } from "react";
 
 import "../styles/globals.css";
@@ -33,7 +34,13 @@ export default function RootLayout({
             <body
                 className={`${poppins.variable} flex touch-pan-x touch-pan-y touch-pinch-zoom flex-col overflow-x-hidden scroll-smooth antialiased`}
             >
-                <Suspense fallback={null}>
+                <Suspense
+                    fallback={
+                        <div className="loadingGlow flex h-screen w-screen flex-col items-center justify-center text-[var(--color-foreground)]">
+                            <LoaderCircle size={50} className="-mt-[25vh] animate-spin" />
+                        </div>
+                    }
+                >
                     <div className="flex min-h-screen">
                         {/* Sidebar (hidden on mobile) */}
                         <Sidebar className="not-lg:hidden" />
@@ -46,7 +53,7 @@ export default function RootLayout({
                             <div className="mb-24 hidden lg:block" />
 
                             {/* Main Content */}
-                            <div className="flex-1 lg:mb-24">{children}</div>
+                            <div className="contentFadeIn flex-1 lg:mb-24">{children}</div>
 
                             {/* Footer (hidden on desktop) */}
                             <Footer className="mt-12 lg:hidden" />
