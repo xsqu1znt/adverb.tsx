@@ -33,7 +33,7 @@ export default function RootLayout({
             <body
                 className={`${poppins.variable} flex touch-pan-x touch-pan-y touch-pinch-zoom flex-col overflow-x-hidden scroll-smooth antialiased`}
             >
-                <Suspense fallback={<div>Loading...</div>}>
+                <Suspense fallback={null}>
                     <div className="flex min-h-screen">
                         {/* Sidebar (hidden on mobile) */}
                         <Sidebar className="not-lg:hidden" />
