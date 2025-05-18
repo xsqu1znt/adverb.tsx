@@ -310,14 +310,14 @@ export default function HomePage() {
 
                             {/* CONTAINER - Version options - Right */}
                             <div className="flex">
-                                {/* BUTTON - Bookmark suggestion */}
+                                {/* BUTTON - Save suggestion */}
                                 <Button
                                     variant="invisible"
                                     size="square"
                                     disabled={isLoading || !versionHistory[activeHistoryIndex]?.[1]}
                                     isLoading={isLoading}
                                     className="rounded-none px-6"
-                                    onClick={() => alert("Bookmark feature coming soon!")}
+                                    onClick={() => alert("Save feature coming soon!")}
                                 >
                                     <BookmarkPlus size={20} />
                                 </Button>
