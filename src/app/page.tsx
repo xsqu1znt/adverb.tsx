@@ -171,13 +171,13 @@ export default function HomePage() {
                             disabled={isLoading}
                             isLoading={isLoading}
                             className={`w-full ${userPrompt.length ? (userPrompt.length > 250 ? "h-50" : "h-30") : "h-15"}`}
-                            maxLength={300}
+                            maxLength={1000}
                             onChange={e => setUserPrompt(e.target.value)}
                         />
 
                         {/* char count and limit */}
                         <div className="absolute right-0 bottom-0 rounded-tl-lg rounded-br-lg border border-[var(--color-button-border)]/25 bg-[var(--color-background)] px-2">
-                            <span className="text-sm opacity-50 dark:opacity-25">{userPrompt.length}/300</span>
+                            <span className="text-sm opacity-50 dark:opacity-25">{userPrompt.length}/1000</span>
                         </div>
                     </div>
 
